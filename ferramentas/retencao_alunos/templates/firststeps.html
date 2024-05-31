@@ -1,0 +1,58 @@
+<!doctype html>
+{% load static %} 
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static 'css/firststeps.css'%}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <title>Sistema Retenção</title>
+</head>
+<body>
+  <header class="navbar navbar-expand-lg navbar-light headerusp">
+    <!-- Canto Esquerdo - Logotipo ou Imagem -->
+    <div class="navbar-brand logo" href="#">
+        <img src="{% static 'images/logotipo.png'%}" alt="Logo"  class="d-inline-block align-top">
+    </div>
+
+    <!-- Canto Direito - Barra de Navegação -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <p class="nav-link text-light" >{{ request.user.first_name }} {{ request.user.last_name }}</p>
+            </li>
+            <li class="nav-item">
+                <p class="nav-link text-light" id="nrousp">{{ request.user }}</p>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Ajuda</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link">Sair</a>
+            </li>
+            
+        </ul>
+    </div>
+  </header>
+  <div class="container">
+    <h1 class="titulo">Sistema de controle das retenções dos alunos de SI</h1>
+    <div class="direcionador">
+      <p class="texto_direcionador">Escolha uma das opções</p>
+      <div class="btn-group">
+        <div class="btn btn-primary" id="nova_planilha">
+          <i class="bi bi-cloud-download display-1"></i> 
+          <p>Carregar nova planilha</p>
+        </div>
+        <div class="btn btn-primary" id="seguir">
+          <i class="bi bi-arrow-right-circle display-1"></i>
+           <p>Seguir para o sistema</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script src="{% static 'js/firstSteps.js'%}"></script>
+</html>

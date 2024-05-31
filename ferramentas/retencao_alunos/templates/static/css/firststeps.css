@@ -1,0 +1,34 @@
+.btn-primary {
+    display: flex;
+    flex-direction: column;
+    margin-right: 5dvw;
+    border-radius: 15px;
+}
+
+#nova_planilha {
+    background-color: rgb(18, 193, 18);
+    border-color: rgb(21, 220, 21);
+}
+
+#nova_planilha:hover {
+    background-color: rgb(8, 177, 8);
+    border-color: rgb(21, 220, 21);
+}
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10dvh;
+}
+
+.texto_direcionador {
+    font-size: 2em;
+}
+
+.headerusp {
+    background-color: #1094AB;
+}
+
+.logo {
+    width: 30dvw;
+}

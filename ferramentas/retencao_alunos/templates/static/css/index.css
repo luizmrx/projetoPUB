@@ -1,0 +1,24 @@
+.headerusp {
+    background-color: #1094AB;
+}
+
+.logo {
+    width: 30dvw;
+}
+
+.info_disc {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.canva-box {
+
+    display: flex;
+    width: 90%;
+    height: 50dvh;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}

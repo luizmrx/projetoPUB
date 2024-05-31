@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/index_aac.css'%}">
+    <title>Coordenador</title>
+</head>
+<body>
+    <header class="navbar navbar-expand-lg navbar-light headerusp">
+        <!-- Canto Esquerdo - Logotipo ou Imagem -->
+        <div class="navbar-brand logo" href="#">
+            <img src="{% static 'images/logotipo.png'%}" alt="Logo"  class="d-inline-block align-top">
+        </div>
+
+        <!-- Canto Direito - Barra de Navegação -->
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <p class="nav-link text-light" >{{ request.user.first_name }} {{ request.user.last_name }}</p>
+                </li>
+                <li class="nav-item">
+                    <p class="nav-link text-light" id="nrousp">{{ request.user }}</p>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Ajuda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'aacc_app:logout' %}">Sair</a>
+                </li>
+                
+            </ul>
+        </div>
+    </header>
+    
+    <div class="container mt-5 mainframe text-center" id="mensagemNaoEncontrado" style="display: none;"> 
+         <h3 >Não foram encontradas AACC's para serem encaminhadas!</h3> 
+         <br>
+         <i class="bi bi-check-circle  display-1"></i>
+         <div class="btn-container">
+            <div class="btn btn-primary loadbutton" onclick="window.location.href='{% url 'aacc_app:scrapping' %}'">Carregar Atividades do Jupiter</div>
+        </div>
+     </div>
+    
+    <div id="corpo" class="container mt-5 mainframe">
+        <h2 class="titulo-tabela">AACC's aguardando encaminhamento</h2>
+        <div class="btn-container">
+            <div class="btn btn-primary loadbutton" onclick="window.location.href='{% url 'aacc_app:scrapping' %}'">Carregar Atividades do Jupiter</div>
+        </div>
+        <div class="scrollable-div">
+            <div class="table-responsive">
+                <table class="table table-borderless table-sm">
+                    <tbody class="tabela-corpo">
+                        <thead>
+                            <tr>
+                                <th class="text-center w-20">Data de envio</th>
+                                <th  class="text-center w-20">Atividade</th>
+                                <th class="text-center w-20">Informações</th>
+                                <th class="text-center w-20">Documento</th>
+                                <th class="text-center w-20">Encaminhar</th>
+                            </tr>
+                        </thead>
+                    
+                       
+                        
+
+                        <!-- Adicione mais linhas conforme necessário... -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalEncaminhar" tabindex="-1" role="dialog" aria-labelledby="modalEncaminharLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEncaminharLabel">Encaminhar Documento</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Adicione um campo de seleção e um botão de encaminhamento aqui -->
+                    <label for="selecaoProfessor">Selecione o Professor:</label>
+                    <select id="selecaoProfessor" class="form-control">
+                        
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmarEncaminhamento()">Encaminhar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalInformações" tabindex="-1" role="dialog" aria-labelledby="modalEncaminharLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalInformaçõesLabel">Informações</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group info">
+                        <label for="aluno" class="form-label font-weight-bold">Aluno: </label>
+                        <p class="form-control-static info_unit" id="aluno"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="atividade" class="form-label font-weight-bold">Atividade: </label>
+                        <p class="form-control-static info_unit" id="atividade"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="area" class="form-label font-weight-bold">Área: </label>
+                        <p class="form-control-static info_unit" id="area"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="titulo" class="form-label font-weight-bold">Título: </label>
+                        <p class="form-control-static info_unit" id="titulo"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="início" class="form-label font-weight-bold">Início: </label>
+                        <p class="form-control-static info_unit" id="início"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="fim" class="form-label font-weight-bold">Fim: </label>
+                        <p class="form-control-static info_unit" id="fim"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="carga" class="form-label font-weight-bold">Carga horária solicitada: </label>
+                        <p class="form-control-static info_unit" id="carga"> </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+
+<script src="{% static 'js/index.js' %}"></script>
+</html>
