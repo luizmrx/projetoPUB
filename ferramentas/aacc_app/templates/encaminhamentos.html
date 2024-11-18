@@ -31,7 +31,7 @@
                     <a class="nav-link" href="#">Ajuda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'aacc_app:logout' %}">Sair</a>
+                    <a class="nav-link" href="{% url 'hub:logout' %}">Sair</a>
                 </li>
                 
             </ul>
@@ -49,8 +49,12 @@
     
     <div id="corpo" class="container mt-5 mainframe">
         <h2 class="titulo-tabela">AACC's aguardando encaminhamento</h2>
-        <div class="btn-container">
-            <div class="btn btn-primary loadbutton" onclick="window.location.href='{% url 'aacc_app:scrapping' %}'">Carregar Atividades do Jupiter</div>
+        <div class="btn-container mt-3 selecionadas">
+            <div class="selecionatodos">
+                <p>Selecionar todos</p>
+                <input type="checkbox" id="selectAll">
+            </div>
+            <button class="btn btn-primary" id="encaminharSelecionadas">Encaminhar Selecionadas</button>
         </div>
         <div class="scrollable-div">
             <div class="table-responsive">
@@ -58,7 +62,8 @@
                     <tbody class="tabela-corpo">
                         <thead>
                             <tr>
-                                <th class="text-center w-20">Data de envio</th>
+                                <th class="text-center w-5">Selecionar</th>
+                                <th class="text-center w-25">Data de envio</th>
                                 <th  class="text-center w-20">Atividade</th>
                                 <th class="text-center w-20">Informações</th>
                                 <th class="text-center w-20">Documento</th>

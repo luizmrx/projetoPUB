@@ -38,12 +38,13 @@ class AaccParaAvaliacaoRepository(AaccParaAvaliacaoRepositoryInterface):
     @classmethod
     def select_aacc_para_avaliacao(cls, id_aacc: str) -> AaccParaAvaliacao:
         try:
-            query = AACC_db.objects.filter(id_aacc=id_aacc)[0]
+            query = AaccParaAvaliacao_db.objects.filter(id_aacc=id_aacc)[0]
             response = AaccParaAvaliacao (
                 id_aacc = id_aacc,
                 id_avaliador = query.id_avaliador,
                 comentarios = query.comentarios,
-                status = query.status
+                status = query.status,
+                carga_aprovada=query.carga_aprovada
             )
             return response
         except Exception:
@@ -62,13 +63,14 @@ class AaccParaAvaliacaoRepository(AaccParaAvaliacaoRepositoryInterface):
                             f"para avaliação do avaliador {id_avaliador}!")
         
     @classmethod
-    def register_avaliacao(cls, id_aacc: str, comentarios: str, status: int) -> None:
+    def register_avaliacao(cls, id_aacc: str, comentarios: str, status: int, carga_aprovada: str) -> None:
         try:
             query = AACC_db.objects.get(id_aacc= id_aacc)
     
             aacc_para_avaliacao = AaccParaAvaliacao_db.objects.get(id_aacc=query)
             aacc_para_avaliacao.status = status
             aacc_para_avaliacao.comentarios = comentarios
+            aacc_para_avaliacao.carga_aprovada = carga_aprovada
             aacc_para_avaliacao.save()
         except:
             raise Exception(f"Erro ao registra avaliação da AACC {id_aacc}!")

@@ -31,7 +31,7 @@
                     <a class="nav-link" href="#">Ajuda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'aacc_app:logout' %}">Sair</a>
+                    <a class="nav-link" href="{% url 'hub:logout' %}">Sair</a>
                 </li>
                 
             </ul>
@@ -55,6 +55,7 @@
                                 <th class="text-center w-20">Informações</th>
                                 <th class="text-center w-20">Documento</th>
                                 <th class="text-center w-20">Avaliar</th>
+                                <th class="text-center w-20">Histórico</th>
                             </tr>
                         </thead>
                     
@@ -79,6 +80,14 @@
                 </div>
                 <div class="modal-body">
                     <!-- Input de texto para comentários -->
+                    <div class="mb-3">
+                        <label for="carga solicitada" class="form-label">Carga Horária Solicitada:</label>
+                        <p class="form-control-static info_unit" id="carga_solicitada"> </p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cargaaprovada" class="form-label">Carga Horária Aprovada:</label>
+                        <input type="text" name="carga_aprovada" class="form-control" id="cargaaprovada" placeholder="Carga horária aprovada">
+                    </div>
                     <div class="mb-3">
                         <label for="comentarios" class="form-label">Comentários:</label>
                         <textarea class="form-control" id="comentarios" rows="3"></textarea>

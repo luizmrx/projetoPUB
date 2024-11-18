@@ -1,4 +1,27 @@
-$(document).ready(carregarDados());
+$(document).ready(function() {
+    
+    carregarDados()
+
+    $('#encaminharSelecionadas').prop('disabled', true).removeClass('btn-primary').addClass('btn-secondary');  // Initially disable the button
+
+    // Add event listener for checkbox changes
+    $('.tabela-corpo').on('change', '.select-row', function() {
+        updateEncaminharButtonState();
+    });
+
+    // Add event listener for the "Select All" checkbox
+    $('#selectAll').on('change', function() {
+        $('.select-row').prop('checked', this.checked);
+        updateEncaminharButtonState();
+    });
+
+     // Add event listener for the "Encaminhar Selecionadas" button
+     $('#encaminharSelecionadas').on('click', function() {
+        if (!$(this).prop('disabled')) {
+            abrirModalEncaminharMultiplas();
+        }
+    });
+});
 
 function carregarDados() {
     const csrfToken = getCookie("csrftoken");
@@ -19,7 +42,11 @@ function carregarDados() {
 
                 data =  JSON.parse(data);
                 $.each(data, function (chave, valor) {
-                    var linha = $('<tr>');
+                    var linha = $('<tr>').data('id', chave);
+                    var checkbox = $('<td>').addClass('text-center w-5').append(
+                        $('<input>').attr('type', 'checkbox').addClass('select-row')
+                    );
+                    linha.append(checkbox);
                     linha.append($('<td>').addClass("text-center w-20").text(converterFormatoData(valor.data_envio)));
                     linha.append($('<td>').addClass("text-center w-20").text(valor.atividade ));
                     var botaoCelulaInformações = $('<td>').addClass('text-center w-20');
@@ -86,15 +113,28 @@ function carregarDados() {
             console.error('Erro ao buscar usuários:', error);
         }
     });
+    // Event listener for the "Select All" checkbox
+    $('#selectAll').on('change', function() {
+        $('.select-row').prop('checked', this.checked);
+    });
+
+    // Event listener for the "Encaminhar Selecionadas" button
+    $('#encaminharSelecionadas').on('click', function() {
+        abrirModalEncaminharMultiplas();
+    });
+
+    // Event listener for the "Encaminhar" button in the modal
+    $('#encaminharConfirmar').on('click', function() {
+        confirmarEncaminhamento();
+    });
 };
 
+
+
 function abrirModalEncaminhar(id_aacc) {
-    // Atualize o ID da modal conforme necessário
     var modalEncaminhar = $('#modalEncaminhar');
-
     modalEncaminhar.data('id_aacc', id_aacc);
-
-    // Exiba a modal
+    modalEncaminhar.data('multiple', false); // Single selection
     modalEncaminhar.modal('show');
 }
 
@@ -114,42 +154,82 @@ function abrirModalInformações(chave, valor) {
     modalInformações.modal('show');
 }
 
-function confirmarEncaminhamento() {
-    // Aqui, você pode obter o valor do campo de seleção e processar o encaminhamento conforme necessário
-    var professorSelecionado = $('#selecaoProfessor').val();
-    
-    var id_AACC = $('#modalEncaminhar').data('id_aacc');
-
-    const csrfToken = getCookie("csrftoken");
-
-    $.ajax({
-        type: 'POST',
-        url: 'encaminhar',  
-        data: {
-            'id_avaliador': professorSelecionado,
-            'id_aacc': id_AACC,
-        },
-        headers: {
-            'X-CSRFToken': csrfToken 
-        },
-        success: function(response) {
-
-            carregarDados()
-
-        },
-        error: function(error) {
-            console.log(error);
-        }
+function abrirModalEncaminharMultiplas() {
+    var selectedIds = [];
+    $('.select-row:checked').each(function() {
+        var row = $(this).closest('tr');
+        var id = row.data('id');
+        selectedIds.push(id);
     });
 
+    if (selectedIds.length === 0) {
+        alert('Por favor, selecione pelo menos uma linha.');
+        return;
+    }
 
-    // Feche a modal após o processamento
+    var modalEncaminhar = $('#modalEncaminhar');
+    modalEncaminhar.data('id_aaccs', selectedIds);
+    modalEncaminhar.data('multiple', true); // Multiple selection
+    modalEncaminhar.modal('show');
+}
+
+function confirmarEncaminhamento() {
+    var professorSelecionado = $('#selecaoProfessor').val();
+    var modalEncaminhar = $('#modalEncaminhar');
+    var isMultiple = modalEncaminhar.data('multiple');
+    const csrfToken = getCookie("csrftoken");
+
+    if (isMultiple) {
+        var id_AACCs = modalEncaminhar.data('id_aaccs');
+
+        $.ajax({
+            type: 'POST',
+            url: 'encaminhar_selecionadas',
+            data: {
+                'id_avaliador': professorSelecionado,
+                'id_aaccs': id_AACCs.join(",")
+            },
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            success: function(response) {
+                carregarDados();
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+
+    } else {
+        var id_AACC = modalEncaminhar.data('id_aacc');
+
+        $.ajax({
+            type: 'POST',
+            url: 'encaminhar',
+            data: {
+                'id_avaliador': professorSelecionado,
+                'id_aacc': id_AACC
+            },
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            success: function(response) {
+                carregarDados();
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
     $('#modalEncaminhar').modal('hide');
 }
 
+
+
 // Função para abrir o arquivo em uma nova aba
 function abrirArquivoEmNovaAba(caminhoArquivo) {
-    window.open(`${encodeURIComponent(caminhoArquivo)}`, '_blank');
+    window.open(`documentos/${encodeURIComponent(caminhoArquivo)}`, '_blank');
 }
 
 function converterFormatoData(dataString) {
@@ -182,4 +262,18 @@ function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+// Update the state of the "Encaminhar Selecionadas" button based on checkbox selection
+function updateEncaminharButtonState() {
+    var selectedCount = $('.select-row:checked').length;
+    var button = $('#encaminharSelecionadas');
+
+    if (selectedCount > 0) {
+        button.prop('disabled', false).removeClass('btn-secondary').addClass('btn-primary');
+        $('.encaminhar').prop('disabled', true).removeClass('btn-primary').addClass('btn-secondary');
+    } else {
+        button.prop('disabled', true).removeClass('btn-primary').addClass('btn-secondary');
+        $('.encaminhar').prop('disabled', false).removeClass('btn-secondary').addClass('btn-primary');
+    }
 }

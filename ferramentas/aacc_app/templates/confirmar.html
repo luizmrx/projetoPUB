@@ -31,7 +31,7 @@
                     <a class="nav-link" href="#">Ajuda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'aacc_app:logout' %}">Sair</a>
+                    <a class="nav-link" href="{% url 'hub:logout' %}">Sair</a>
                 </li>
                 
             </ul>
@@ -52,6 +52,7 @@
                             <tr>
                                 <th class="text-center w-20">Data de envio</th>
                                 <th class="text-center w-20">Status</th>
+                                <th class="text-center w-20">Informações</th>
                                 <th class="text-center w-20">Documento</th>
                                 <th class="text-center w-20">Ver avaliação</th>
                                 <th class="text-center w-20">Confirmar</th>
@@ -86,6 +87,51 @@
                     <div class="mb-3">
                         <label for="status" class="form-label">Status:</label>
                         <p id="status"> </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalInformações" tabindex="-1" role="dialog" aria-labelledby="modalEncaminharLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalInformaçõesLabel">Informações</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group info">
+                        <label for="aluno" class="form-label font-weight-bold">Aluno: </label>
+                        <p class="form-control-static info_unit" id="aluno"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="atividade" class="form-label font-weight-bold">Atividade: </label>
+                        <p class="form-control-static info_unit" id="atividade"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="area" class="form-label font-weight-bold">Área: </label>
+                        <p class="form-control-static info_unit" id="area"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="titulo" class="form-label font-weight-bold">Título: </label>
+                        <p class="form-control-static info_unit" id="titulo"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="início" class="form-label font-weight-bold">Início: </label>
+                        <p class="form-control-static info_unit" id="início"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="fim" class="form-label font-weight-bold">Fim: </label>
+                        <p class="form-control-static info_unit" id="fim"> </p>
+                    </div>
+                    <div class="form-group info">
+                        <label for="carga" class="form-label font-weight-bold">Carga horária solicitada: </label>
+                        <p class="form-control-static info_unit" id="carga"> </p>
                     </div>
                 </div>
                 <div class="modal-footer">

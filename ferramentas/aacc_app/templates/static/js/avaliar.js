@@ -39,6 +39,11 @@ function carregarDados() {
                     var botaoAvaliar = $('<button>').addClass('btn btn-primary encaminhar').text('Avaliar');
                     botaoCelulaAvaliar.append(botaoAvaliar);
                     linha.append(botaoCelulaAvaliar);
+
+                    var botaoCelulahistorico = $('<td>').addClass('text-center w-20');
+                    var botaohistorico = $('<button>').addClass('btn btn-primary historico').text('Histórico');
+                    botaoCelulahistorico.append(botaohistorico);
+                    linha.append(botaoCelulahistorico);
                     
                     tabelaCorpo.append(linha);
     
@@ -46,13 +51,18 @@ function carregarDados() {
                     botaoVisualizar.on('click', function() {
                         abrirArquivoEmNovaAba(valor.doc);
                     });
-    
+                    
+
                     botaoAvaliar.on('click', function() {
-                        abrirModalAvaliar(chave);
+                        abrirModalAvaliar(chave, valor.carga_horaria);
                     });
 
                     botaoInformações.on('click', function() {
                         abrirModalInformações(chave, valor);
+                    })
+
+                    botaohistorico.on('click', function() {
+                        historico_aluno(valor.aluno)
                     })
     
                 });
@@ -68,9 +78,12 @@ function carregarDados() {
     });
 };
 
-function abrirModalAvaliar(id_aacc) {
+function abrirModalAvaliar(id_aacc, cargaHoraria) {
     // Atualize o ID da modal conforme necessário
     var modalAvaliar = $('#modalAvaliar');
+
+    $("#carga_solicitada").text(cargaHoraria);
+
 
     modalAvaliar.data('id_aacc', id_aacc);
 
@@ -94,9 +107,17 @@ function abrirModalInformações(chave, valor) {
     modalInformações.modal('show');
 }
 
+function historico_aluno(aluno) {
+
+    window.open(`historico_page?aluno=${aluno}`);
+
+}
+
 function confirmarAvaliacao(status) {
     // Aqui, você pode obter o valor do campo de seleção e processar o encaminhamento conforme necessário
     var comentarios = $('#comentarios').val();
+
+    var carga_aprovada = $('#cargaaprovada').val()
     
     var id_AACC = $('#modalAvaliar').data('id_aacc');
 
@@ -108,7 +129,8 @@ function confirmarAvaliacao(status) {
         data: {
             'comentarios': comentarios,
             'id_aacc': id_AACC,
-            'status': status
+            'status': status,
+            'carga_aprovada': carga_aprovada
         },
         headers: {
             'X-CSRFToken': csrfToken 
@@ -130,7 +152,7 @@ function confirmarAvaliacao(status) {
 
 // Função para abrir o arquivo em uma nova aba
 function abrirArquivoEmNovaAba(caminhoArquivo) {
-    window.open(`${caminhoArquivo}`, '_blank');
+    window.open(`documentos/${caminhoArquivo}`, '_blank');
 }
 
 function converterFormatoData(dataString) {

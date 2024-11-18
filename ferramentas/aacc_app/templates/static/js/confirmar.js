@@ -31,6 +31,11 @@ function carregarDados() {
                     var linha = $('<tr>');
                     linha.append($('<td>').addClass("text-center w-20").text(converterFormatoData(valor.data_envio)));
                     linha.append($('<td>').addClass("text-center w-20").text(valorText));
+
+                    var botaoCelulaInformações = $('<td>').addClass('text-center w-20');
+                    var botaoInformações = $('<button>').addClass('btn btn-primary informações').text('Informações');
+                    botaoCelulaInformações.append(botaoInformações);
+                    linha.append(botaoCelulaInformações);
                     
                     
                     var botaoCelulaVisualizar = $('<td>').addClass('text-center w-20');
@@ -63,6 +68,11 @@ function carregarDados() {
                     botaoConfirmar.on('click', function() {
                         confirmarAvaliacao(chave);
                     });
+
+                    botaoInformações.on('click', function() {
+                        abrirModalInformações(chave, valor);
+                    });
+    
     
                 });
             } else {
@@ -98,6 +108,22 @@ function abrirModalEncaminhar(id_aacc) {
     modalEncaminhar.modal('show');
 }
 
+function abrirModalInformações(chave, valor) {
+    // Atualize o ID da modal conforme necessário
+    var modalInformações = $('#modalInformações');
+
+    $("#aluno").text(valor.aluno);
+    $("#atividade").text(valor.atividade);
+    $("#area").text(valor.area);
+    $("#titulo").text(valor.titulo);
+    $("#início").text(valor.inicio);
+    $("#fim").text(valor.fim);
+    $("#carga").text(valor.carga_horaria);
+
+    // Exiba a modal
+    modalInformações.modal('show');
+}
+
 function confirmarAvaliacao(id_AACC) {
     
 
@@ -126,7 +152,7 @@ function confirmarAvaliacao(id_AACC) {
 
 // Função para abrir o arquivo em uma nova aba
 function abrirArquivoEmNovaAba(caminhoArquivo) {
-    window.open(`${caminhoArquivo}`, '_blank');
+    window.open(`documentos/${caminhoArquivo}`, '_blank');
 }
 
 function converterFormatoData(dataString) {

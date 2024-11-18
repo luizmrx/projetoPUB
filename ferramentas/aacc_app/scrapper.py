@@ -12,7 +12,7 @@ def scrapper():
 
         print("Webscrapping sendo executado...")
         options = Options()
-        options.add_argument("--headless")
+        #options.add_argument("--headless")
 
 
         download_directory = "/home/lucas/Desktop/projetos/IC/hub_ferramentas_si/hub_ferramentas_SI/ferramentas/aacc_app/comprovantes_aac"
@@ -74,7 +74,7 @@ def scrapper():
 
         botao_buscar = navegador.find_element(by=By.XPATH, value="/html/body/div[1]/div[3]/div[3]/table/tbody/tr/td/div/div[1]/div/form/input[1]")
         botao_buscar.click()
-        sleep(2)
+        sleep(5)
 
         # Locate the table by its ID
         table = navegador.find_element(By.ID, 'retorno')
@@ -87,12 +87,13 @@ def scrapper():
 
         for tr in table.find_elements(By.TAG_NAME, 'tr')[1:]:  # Skip the header row if headers exist
             cells = tr.find_elements(By.TAG_NAME, 'td')
-            nro_usp = "98989898"
+            print(cells[0].get_attribute('innerText'))
+            nro_usp = cells[0].get_attribute('innerText')
             cells[0].click()
-            sleep(1)
+            sleep(2)
             botao_consultar = navegador.find_element(by=By.XPATH, value='/html/body/div[1]/div[3]/div[3]/table/tbody/tr/td/div/div[2]/table[2]/tbody/tr/td/div/div[5]/div/table/tbody/tr/td[1]/table/tbody/tr/td[1]/div')
             botao_consultar.click()
-            sleep(1)
+            sleep(2)
             info = coletar_info(navegador)
             carregar_aacc(info, nro_usp)
         
@@ -128,6 +129,7 @@ def coletar_info(navegador):
 
 
     texto_documento = navegador.find_element(by=By.XPATH, value='/html/body/div[6]/div[2]/form/table/tbody/tr[11]/td[2]/span/a')
+    nome_doc = texto_documento.get_attribute("innerText")
     texto_documento.click()
     
     sleep(3)
@@ -144,7 +146,7 @@ def coletar_info(navegador):
          "inicio": inicio,
          "fim": fim,
          "carga_horaria": carga_horaria,
-         "texto_documento": texto_documento
+         "texto_documento": nome_doc
     }
 
     botao_fechar = navegador.find_element(by= By.XPATH, value='/html/body/div[6]/div[1]/a')
@@ -155,7 +157,10 @@ def coletar_info(navegador):
 
 
 def carregar_aacc(info: Dict, nro_usp: str) -> None:
-     
+
+
+    if info["area"] == "E":
+         info["area"] = "Ensino"
 
     response = Aacc(
         id_aacc="teste",
@@ -167,8 +172,8 @@ def carregar_aacc(info: Dict, nro_usp: str) -> None:
         area = info["area"],
         ano_semestre=info["texto_ano_semestre"],
         titulo= info["titulo"],
-        inicio= datetime.strptime(info["inicio"], "%d/%m/%Y").strftime("%Y-%m-%d"),
-        fim=datetime.strptime(info["fim"], "%d/%m/%Y").strftime("%Y-%m-%d"),
+        inicio= None if info["inicio"] == '' else datetime.strptime(info["inicio"], "%d/%m/%Y").strftime("%Y-%m-%d"),
+        fim= None if info["fim"] == '' else datetime.strptime(info["fim"], "%d/%m/%Y").strftime("%Y-%m-%d"),
         carga_horaria=info["carga_horaria"]
     )
 

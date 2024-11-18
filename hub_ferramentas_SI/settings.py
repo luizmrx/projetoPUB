@@ -26,7 +26,9 @@ SECRET_KEY = "django-insecure-!59bhu%=9zg+k*hgfu@o*-t9%w1n+y7y%evwlev8@oy_b1p0!o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "143.107.58.71"
+]
 
 
 # Application definition
@@ -36,6 +38,7 @@ INSTALLED_APPS = [
     "ferramentas.hub",
     "ferramentas.retencao_alunos",
     "ferramentas.aacc_app",
+    "ferramentas.ferramenta_graduacao_si.table",
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -54,6 +57,17 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+DATABASES = {
+    "default": {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'tool_manage',
+        'USER': 'root',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
 
 ROOT_URLCONF = "hub_ferramentas_SI.urls"
 
@@ -79,12 +93,6 @@ WSGI_APPLICATION = "hub_ferramentas_SI.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
 
 
 # Password validation
@@ -127,9 +135,20 @@ STATICFILES_DIRS = [
     BASE_DIR / "ferramentas/retencao_alunos/templates/static",
     BASE_DIR / "ferramentas/hub/templates/static",
     BASE_DIR / "ferramentas/aacc_app/templates/static",
+    BASE_DIR / "ferramentas/ferramenta_graduacao_si/table/templates/table",
 ]
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'atividadescomplementaresteste@gmail.com'
+EMAIL_HOST_PASSWORD = 'xqnr qbji fode dswg'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

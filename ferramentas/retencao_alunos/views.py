@@ -75,7 +75,7 @@ def upload_planilha(request):
         uploaded_file = request.FILES['file']
         
         # Specify the directory where you want to save the file
-        upload_dir = '/home/lucas/Desktop/projetos/IC/sistema-retenção/dashboard/excel_data'
+        upload_dir = '~/ferramentas/retencao_alunos/excel_data'
         
         # Initialize FileSystemStorage with the desired directory
         fs = FileSystemStorage(location=upload_dir)

@@ -12,7 +12,7 @@ class Aacc(models.Model):
 
     id_aacc = models.AutoField(primary_key=True)
     aluno = models.CharField(max_length=8)
-    doc = models.FileField(upload_to='documentos/')
+    doc = models.FileField(upload_to='ferramentas/aacc_app/comprovantes_aac')
     data_envio = models.DateField()
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
 
@@ -20,8 +20,8 @@ class Aacc(models.Model):
     area = models.CharField(max_length=50)
     ano_semestre = models.CharField(max_length=6) #formato yyyy/s
     titulo = models.CharField(max_length=500)
-    inicio = models.DateField()
-    fim = models.DateField()
+    inicio = models.DateField(null=True)
+    fim = models.DateField(null=True)
     carga_horaria = models.CharField(max_length=4)
 
     def __str__(self):
@@ -39,6 +39,7 @@ class AaccParaAvaliacao(models.Model):
     id_aacc = models.ForeignKey(Aacc, on_delete=models.CASCADE)
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     comentarios = models.CharField(max_length=500, blank=True, null=True)
+    carga_aprovada = models.CharField(max_length=4, default=0)
 
     def __str__(self):
         return f"AACC {self.id_aacc} - {self.id_avaliador}"

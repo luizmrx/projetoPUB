@@ -27,7 +27,7 @@ class UploadRetentionSheet(UploadRetentionSheetInterface):
 
     def upload_sheet(self, path: str, year: int, semester: int) -> Dict:
         # Finding the file
-        file = os.path.abspath(f"ferramentas/retencao_alunos/excel_data//{path}")
+        file = os.path.abspath(f"~/ferramentas/retencao_alunos/excel_data/{path}")
 
         # Working with the xls file using pandas
         sheet = Planilha(file)

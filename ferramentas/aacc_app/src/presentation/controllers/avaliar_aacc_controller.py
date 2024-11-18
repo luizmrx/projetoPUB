@@ -14,11 +14,13 @@ class AvaliarAaccController(ControllerInterface):
         aacc : str = http_request.query_params["id_aacc"]
         comentarios : str = http_request.query_params["comentarios"]
         status : int = http_request.query_params["status"]
+        carga_aprovada : str = http_request.query_params["carga_aprovada"]
 
         response = self.__use_case.avaliar_aacc(
             aacc= aacc,
             comentarios= comentarios,
-            status= status
+            status= status,
+            carga_aprovada=carga_aprovada
         )
 
         return HttpResponse (

@@ -15,4 +15,4 @@ class AaccParaAvaliacaoRepositoryInterface(ABC):
     def register_aacc_para_avaliacao(self, id_aacc: str, id_avaliador: str) -> None: pass
 
     @abstractmethod
-    def register_avaliacao(self, id_aacc: str, comentarios: str, status: int) -> None: pass
+    def register_avaliacao(self, id_aacc: str, comentarios: str, status: int, carga_aprovada: str) -> None: pass

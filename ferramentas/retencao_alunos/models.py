@@ -2,7 +2,7 @@ from django.db import models
 
 class Student(models.Model):
 
-    num_usp = models.CharField(primary_key=True, max_length=10)
+    num_usp = models.CharField(primary_key=True, max_length=12)
     name = models.CharField(max_length=80)
     start_year = models.IntegerField()
 

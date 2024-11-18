@@ -17,6 +17,7 @@ tr {
     background-color: #F6AE38;
     border-color: #F6AE38;
     margin-top: 4dvh;
+    margin-bottom: 2dvh;
 }
 
 
@@ -42,12 +43,17 @@ tr {
 }
 
 .confirmar {
-    background-color: rgb(27, 174, 27);
+    background-color: rgb(5, 167, 129);
     border: none;
 }
 
 .informações {
-    background-color: rgb(37, 206, 11);
+    background-color: #26c10e;
+    border: none;
+}
+
+.historico {
+    background-color: rgb(83, 91, 88);
     border: none;
 }
 
@@ -57,8 +63,9 @@ tr {
 }
 
 .mainframe {
-    width: 60dvw;
+    width: 70dvw;
     background-color: white;
+    margin-bottom: 10dvh;
 }
 
 .titulo-home{
@@ -75,4 +82,27 @@ tr {
 
 .info_unit {
     margin-left: 15px;
+}
+
+.selecionadas {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3dvh;
+}
+
+.selecionatodos {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    text-align: center;
+    width: 12dvw;
+}
+
+.selecionatodos > p {
+    margin: 0;
+}
+
+.select-row {
+    background-color: #F6AE38;
 }

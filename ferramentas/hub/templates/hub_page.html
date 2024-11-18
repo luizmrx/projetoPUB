@@ -34,7 +34,7 @@
                     <a class="nav-link text-light" href="#">Ajuda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-light">Sair</a>
+                    <a class="nav-link text-light" href="{% url 'hub:logout' %}">Sair</a>
                 </li>
             </ul>
         </div>
@@ -47,7 +47,7 @@
         </div>
 
         <div class="btn-container">
-            <div class="btn btn-primary" >Atribuição de horários dos professores</div>
+            <div class="btn btn-primary" onclick="window.location.href='{% url 'ferramenta_graduacao_si:menupage' %}'" >Atribuição de horários dos professores</div>
             <div class="btn btn-primary" onclick="window.location.href='{% url 'retencao_alunos:firststeps' %}'">Índices de retenção dos alunos</div>
             <div class="btn btn-primary" onclick="window.location.href='{% url 'aacc_app:index' %}'">Atividades acadêmicas curriculares (AAC's)</div>
         </div>

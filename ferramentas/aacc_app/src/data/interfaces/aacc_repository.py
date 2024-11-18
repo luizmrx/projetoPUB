@@ -18,3 +18,6 @@ class AaccRepositoryInterface(ABC):
 
     @abstractmethod
     def create_aacc(self, aacc: Aacc) -> None: pass
+
+    @abstractmethod
+    def select_aac_aluno(self, aluno: str) -> None: pass

@@ -10,12 +10,13 @@ class AvaliarAacc(AvaliarAaccInterface):
         self.__aacc_avaliacao_repository = aacc_avaliacao_repository
         self.__aacc_repository = aacc_repository
 
-    def avaliar_aacc(self, aacc: str, comentarios: str, status: int) -> None:
+    def avaliar_aacc(self, aacc: str, comentarios: str, status: int, carga_aprovada: str) -> None:
 
         response = self.__aacc_avaliacao_repository.register_avaliacao(
             id_aacc=aacc, 
             comentarios=comentarios, 
-            status=status
+            status=status,
+            carga_aprovada=carga_aprovada
         )
 
         self.__aacc_repository.update_status_aacc(id_aacc= aacc, status= 2)

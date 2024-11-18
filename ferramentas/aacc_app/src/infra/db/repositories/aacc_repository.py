@@ -67,6 +67,13 @@ class AaccRepository(AaccRepositoryInterface):
                     doc = dado.doc,
                     data_envio = dado.data_envio,
                     status_avaliacao= aacc_avaliada.status,
+                    atividade = dado.atividade,
+                    area = dado.area,
+                    ano_semestre = dado.ano_semestre,
+                    titulo = dado.titulo,
+                    inicio = dado.inicio,
+                    fim = dado.fim,
+                    carga_horaria = dado.carga_horaria,
                     id_avaliador= aacc_avaliada.id_avaliador,
                     comentarios= aacc_avaliada.comentarios
                 )
@@ -87,9 +94,17 @@ class AaccRepository(AaccRepositoryInterface):
     @classmethod
     def create_aacc(cls, aacc: Aacc) -> None:
         try:
+            #verifica se a AAC já foi cadastrada
+            aac = AACC_db.objects.filter(
+                aluno = aacc.aluno,
+                titulo = aacc.titulo,
+                inicio = aacc.inicio,
+                fim = aacc.fim
+            )
+            if aac: return
             new_aacc = AACC_db.objects.create(
                 aluno = aacc.aluno,
-                doc = f"documentos/{aacc.doc}",
+                doc = aacc.doc,
                 data_envio = aacc.data_envio,
                 status = aacc.status,
                 atividade = aacc.atividade,
@@ -105,3 +120,28 @@ class AaccRepository(AaccRepositoryInterface):
         except Exception as e: 
             print(e)
             raise Exception("Erro ao registrar Aacc!")
+
+    @classmethod
+    def select_aac_aluno(cls, aluno: str) -> List[Aacc]:
+        try:
+            query = AACC_db.objects.filter(aluno= aluno)
+            response : List[Aacc] = []
+            for dado in query:
+                aacc_registrada = Aacc(
+                    id_aacc = dado.id_aacc,
+                    aluno = dado.aluno,
+                    doc = dado.doc,
+                    data_envio = dado.data_envio,
+                    status = dado.status,
+                    atividade = dado.atividade,
+                    area = dado.area,
+                    ano_semestre = dado.ano_semestre,
+                    titulo = dado.titulo,
+                    inicio = dado.inicio,
+                    fim = dado.fim,
+                    carga_horaria = dado.carga_horaria
+                )
+                response.append(aacc_registrada)
+            return response
+        except: 
+            raise Exception(f"Erro ao buscar por AACC'S  do aluno {aluno}!")

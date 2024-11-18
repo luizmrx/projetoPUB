@@ -16,6 +16,7 @@ from .src.data.use_cases.user.confirmar_aacc import ConfirmarAacc
 from .src.data.use_cases.user.cadastrar_user import CadastrarUser
 from .src.data.use_cases.user.autenticar_user import AutenticarUser
 from .src.data.use_cases.user.listar_users import ListarUsers
+from .src.data.use_cases.aacc.listar_aac_aluno import ListarAacAluno
 #repositórios
 from .src.infra.db.repositories.aacc_avaliacao_repository import AaccParaAvaliacaoRepository
 from .src.infra.db.repositories.aacc_repository import AaccRepository
@@ -30,12 +31,18 @@ from .src.presentation.controllers.confirmar_aacc_controller import ConfirmarAac
 from .src.presentation.controllers.cadastrar_user_controller import CadastrarUserController
 from .src.presentation.controllers.autenticar_user_controller import AutenticarUserController
 from .src.presentation.controllers.listar_users_controller import ListarUsersController
+from .src.presentation.controllers.listar_aac_aluno import ListarAacAlunoController
+from .src.presentation.controllers.encaminhar_selecionadas_controller import EncaminharSelecionadasAaccController
 #adapters
 from .src.presentation.adapters.request_adapter import request_adapter
 #presenters
 from .src.presentation.presenters.json_response import json_response
 #scrapper
 from .scrapper import scrapper
+from .scrapper_retorno import scrapper_retorno
+#email
+from .email import send_activity_assignment_email
+
 # Create your views here.
 def index(request):
     return redirect("aacc_app:login")
@@ -48,6 +55,19 @@ def home_page(request):
 @login_required(login_url="/login")
 def avaliar_page(request):
     return render(request, "avaliacao.html")
+
+@login_required(login_url="/login")
+def historico_page(request):
+
+    if request.method == "GET":
+
+        aluno_context = request.GET["aluno"]
+
+        context = {
+            "aluno_context": aluno_context
+        }
+
+        return render(request, "historico.html", context)
 
 @login_required(login_url="/login")
 @allowed_users(["coordenador"])
@@ -67,6 +87,7 @@ def scrapping(request):
         return render(request, "encaminhamentos.html")
     else:
         return HttpResponse("error: Invalid request method")
+    
 @unauthenticated_user 
 def login(request):
 
@@ -132,6 +153,28 @@ def encaminhar(request):
 
         response = http_response.body["data"]
 
+        send_activity_assignment_email("lucastferracin@gmail.com", "primeiro teste")
+
+        return HttpResponse(response)
+    
+    return HttpResponse("error: Invalid request method")
+
+@login_required(login_url="/login")
+@allowed_users(["coordenador"])
+def encaminhar_selecionadas(request):
+
+    if request.method == 'POST':
+
+        aacc_repository = AaccRepository()
+        aacc_avaliacao_repository = AaccParaAvaliacaoRepository()
+        use_case = EncaminharAacc(aacc_repository= aacc_repository,
+                                aacc_avaliacao_repository= aacc_avaliacao_repository)
+        controller = EncaminharSelecionadasAaccController(use_case = use_case)
+
+        http_response = request_adapter(request=request, controller= controller)
+
+        response = http_response.body["data"]
+
         return HttpResponse(response)
     
     return HttpResponse("error: Invalid request method")
@@ -162,15 +205,22 @@ def confirmar(request):
     if request.method == 'POST':
 
         aacc_repository = AaccRepository()
+        aacc_avaliacao_repository = AaccParaAvaliacaoRepository()
 
-        use_case = ConfirmarAacc(aacc_repository= aacc_repository)
+        use_case = ConfirmarAacc(aacc_repository= aacc_repository, 
+                                 aacc_avaliacao_repo=aacc_avaliacao_repository)
         controller = ConfirmarAaccController(use_case = use_case)
 
         http_response = request_adapter(request=request, controller= controller)
 
-        response = http_response.body["data"]
+        aac, acc_avaliacao = http_response.body["data"]
 
-        return HttpResponse(response)
+        #ordenar scraping de retorno ao jupiter
+        if http_response.status_code == 200:
+
+            scrapper_retorno(aac=aac, aac_avaliação=acc_avaliacao)
+
+        return HttpResponse("success!")
     
     return HttpResponse("error: Invalid request method")
 
@@ -252,11 +302,32 @@ def listar_users(request):
 
     return HttpResponse("error: Invalid request method")
 
+@login_required(login_url="/login")
+def listar_aac_aluno(request):
+
+    if request.method == 'GET':
+
+        aac_repository = AaccRepository()
+
+        use_case = ListarAacAluno(aac_repository= aac_repository)
+        controller = ListarAacAlunoController(use_case= use_case)
+
+        http_response = request_adapter(request= request, controller= controller)
+
+        response = json_response(http_response.body["data"])
+
+        return JsonResponse(json.dumps(response, cls=DjangoJSONEncoder), safe=False)
+
+    return HttpResponse("error: Invalid request method")
+
+
+
+
 #utilitarios
 @login_required(login_url="/login")
 def visualizar_documento(request, nome_arquivo):
     caminho_documento = os.path.join(
-        "/home/lucas/Desktop/projetos/IC/hub_ferramentas_si/hub_ferramentas_SI/documentos", nome_arquivo)
+        "/home/lucas/Desktop/projetos/IC/hub_ferramentas_si/hub_ferramentas_SI/ferramentas/aacc_app/comprovantes_aac/", nome_arquivo)
     with open(caminho_documento, 'rb') as documento:
         response = HttpResponse(documento.read(), content_type='application/pdf')
         response['Content-Disposition'] = f'inline; filename={nome_arquivo}'
