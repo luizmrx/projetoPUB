@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Carrega o framework Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js"></script>
+    
+    <!-- Carrega a biblioteca Ajax -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <!-- Carrega a biblioteca jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Carrega a biblioteca jQuery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
+    {%load static %}
+    <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+    <script type="module" src="{% static 'table/js/main.js' %}"></script>
+
+    {{ semestre|json_script:"smt"}}
+    {{ detalhes_profs|json_script:"dtl_profs" }}
+    {{ cods_tbl_hr|json_script:"cods_auto_obrig" }}
+    {{ cods_tbl_hr_ext|json_script:"cods_auto_ext"}}
+    {{ mtr_auto_nome|json_script:"mtr_auto_nome"}}
+    {{ auto_profs|json_script:"auto_profs"}}
+    {{ rest_horarios|json_script:"rest"}}
+    {{ impedimentos_totais|json_script:"impedimentos_totais"}}
+    {{ cod_mtr_sugestao|json_script:"cod_mtr_sugestao"}}
+    {{ cod_mtr_sugestao_completo|json_script:"cod_mtr_sugestao_completo"}}
+    
+    <!-- {{ turmas_rp|json_script:"turmas_rp" }} -->
+
+    <title>Cronograma</title>
+
+</head>
+
+<body>
+    <header class="navbar navbar-expand-lg navbar-light headerusp">
+        <!-- Canto Esquerdo - Logotipo ou Imagem -->
+        <div class="navbar-brand logo" href="#">
+            <img src="{% static 'images/logotipo.png'%}" alt="Logo"  class="d-inline-block align-top">
+        </div>
+
+        <!-- Canto Direito - Barra de Navegação -->
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item ">
+                    <p class="nav-link text-light">Ano válido: {{anoAberto}}</p>
+                </li>
+                <li class="nav-item">
+                    <p class="nav-link text-light" id="nrousp">{{ request.user }}</p>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Ajuda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'hub:logout' %}">Sair</a>
+                </li>
+                
+            </ul>
+        </div>
+    </header>
+    <div style="width:90%; font-size: 12px;" class="mx-auto instrucoes">
+        <h4>Instruções</h4>
+        <ol>
+            <li>Dê um duplo clique sobre a célula para alterá-la</li>
+            <li>turmas extras podem ser preenchidas com qualquer matéria</li>
+            <li>o sistema salva quando o par disciplina/professor estiver completo</li>
+            <li>Ao apagar um docente o sistema deleta a disciplina associada a ele e vice-versa</li>
+            <li>Para fazer o update selecione uma célula já preenchida e troque o dado</li>
+            <li>A turmas extras são divididas por semestre do ano(par/ímpar), ou seja, há duas tabelas para o ano</li>
+        </ol>
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="myModalLabel"></h5>
+                </div>
+                <div class="modal-body" id="modalBody">
+                <!-- Aqui será exibido o conteúdo das mensagens -->
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div id="url-data" data-url="{% url 'ferramenta_graduacao_si:save_modify' %}"></div>
+        
+        
+        <!--NÂO APAGUE-->
+        <!--Descontinuado, mas continua funcionando se descomentar-->
+        <!--
+        <h4>Tabela para inserção de turmas extras</h4>
+        {% if anoAberto == ano%}
+        <table class="table table-bordered editable" id="tbl_ext">
+        {% else %}
+        <table class="table table-bordered" id="tbl_ext">
+        {% endif %}
+            <thead>
+                <tr class="table-secondary">
+                    <th scope="col"></th>
+                    <th scope="col">Seg</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Ter</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Qua</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Qui</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Sex</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Turma</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Matutino 1 8:00-09:45h</th>
+                    {%for i in tbl_extra.0%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td rowspan="2" class="align-middle text-center">02</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Matutino 2 10:15-12:00h</th>
+                    {%for i in tbl_extra.1%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td style="display:none;">02</td>
+                </tr>
+                <th colspan="12" class="table-secondary p-4"></th>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Noturno 1 19:00 - 20:45h</th>
+                    {%for i in tbl_extra.2%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td rowspan="2" class="align-middle text-center">04</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Noturno 2 21:00 - 22:45h</th>
+                    {%for i in tbl_extra.3%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td style="display:none;">04</td>
+                </tr>
+            </tbody>
+        </table>
+        --> 
+
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <span id="closePopup" class="close">&times;</span>
+                <h4>Atribua até 2 professores para a disciplina RP2:</h4>
+                <p>Professor:</p>
+                <input type="text" id="prof_rp1" class="form-control autocomplete campo1" placeholder="Digite o nome">
+                <p>Professor:</p>
+                <input type="text" id="prof_rp2" class="form-control autocomplete campo2" placeholder="Digite o nome">
+            
+                <input type="submit" class="btn btn-primary" id="submitForm" value="Salvar">
+            </div>
+        </div>
+
+        {% if anoAberto == ano%}
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h6 class="mb-3">Código da matéria (turma extra)</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" id="mtr" class="form-control autocomplete" placeholder="Digite o nome da matéria de outro semestre de curso">
+                        <div class="input-group-append">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-2" id="cod" style="display:none">Código da matéria: <span></span></p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <hr>
+        
+        <h4>Tabela para inserção de obrigatórias e extras no vespertino</h4>
+        {% if anoAberto == ano%}
+        <table class="table table-bordered font-weight editable" id="tbl1">
+        {% else %}
+        <table class="table table-bordered font-weight" id="tbl1">
+        {% endif %}    
+            <thead>
+                <tr class="table-secondary">
+                    <th scope="col"></th>
+                    <th scope="col">Seg</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Ter</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Qua</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Qui</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Sex</th>
+                    <th scope="col">Prof</th>
+                    <th scope="col">Turma</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row" class="align-middle text-center" >Matutino 1 8:00-09:45h</th>
+                    {%for i in tProfs.0 %}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td rowspan="2" class="align-middle text-center">02</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Matutino 2 10:15-12:00h</th>
+                    {%for i in tProfs.1%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td style="display:none;">02</td>
+                </tr>
+                <th colspan="12" class="table-secondary p-4"></th>
+                <tr>
+                    <th scope="row" rowspan="2" class="align-middle text-center">Vespertino 1 14:00 - 15:45h</th>
+                    <td class="align-middle text-center">{{tProfs.2.0}}</td>
+                    <td class="align-middle text-center">{{tProfs.2.1}}</td>
+                    {%for vl in tProfs.2%}
+                        {% if forloop.counter0 > 1 %}
+                        <td rowspan="2" class="align-middle text-center">{{vl}}</td>    
+                        {%endif%}
+                    {%endfor%}
+                    <td style="display:none;">3</td>
+                </tr>
+                <tr class="custom-border">
+                    <td class="align-middle text-center">{{tProfs.3.0}}</td>
+                    <td class="align-middle text-center">{{tProfs.3.1}}</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="align-middle text-center">Vespertino 2 16:15-18:00h</th>
+                    {%for i in tProfs.4%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td style="display:none;">3</td>
+                </tr>
+                <th colspan="12" class="table-secondary p-4"></th>
+                <tr>
+                    <th scope="row" rowspan="2" class="align-middle text-center">Noturno 1 19:00 - 20:45h</th>
+                    {%for i in tProfs.5%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td class="align-middle text-center">04</td>
+                </tr>
+                <tr class="custom-border">
+                    {%for i in tProfs.6%}
+                    <td class="align-middle text-center ">{{i}}</td>
+                    {%endfor%}
+                    <td class="align-middle text-center">94</td>
+                </tr>
+                <tr>
+                    <th scope="row" rowspan="2" class="align-middle text-center">Noturno 2 21:00 - 22:45h</th>
+                    {%for i in tProfs.7%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td class="align-middle text-center">04</td>
+                </tr>
+                <tr class="custom-border">
+                    {%for i in tProfs.8%}
+                    <td class="align-middle text-center">{{i}}</td>
+                    {%endfor%}
+                    <td class="align-middle text-center">94</td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <!--Descontinuado, mas continua funcionando se descomentar-->
+        <!--{% if anoAberto == ano%}
+        {% if not semestre == 7 and not semestre == 8%}
+        <div class="container mt-3">
+            <h6>Preferências para o {{semestre}}º semestre (as linhas 1,2,3 são as prioridades)</h6>
+            <table class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                    <th></th>
+                    {% for mtr_cod in tbl_pref.0 %}
+                        <th>{{ mtr_cod }}</th>
+                    {% endfor %}
+                    </tr>
+                </thead>
+                <tbody> 
+                    {% for row in tbl_pref|slice:"1:" %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        {% for linha in row %}
+                        <td>{{ linha|join:", " }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {%endif%} -->
+        
+        
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h6 class="mb-3">Detalhes do Professor</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" id="prof" class="form-control autocomplete" placeholder="Digite o nome">
+                        <div class="input-group-append">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        </div>
+                    </div>
+                    {% comment %} <p class="text-muted mt-2" id="infos_prof" style="display:none">Código da matéria: <span></span></p>     {% endcomment %}
+                </div>
+            </div>
+        </div>
+        
+    
+        <div class="container" style="display:none" id="infos_prof">
+            <div class="row">
+                <div class="col-sm-12">
+                    <button id="fechar_info" class="close">&times;</button>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>Nome</th>
+                                <td id="nome"></td>
+                            </tr>
+                            <tr>
+                                <th>Pós-doc ou licença-prêmio</th>
+                                <td id="pos_doc"></td>
+                            </tr>
+                            <tr>
+                                <th>Preferência optativa</th>
+                                <td id="pref"></td>
+                            </tr>
+                            <tr>
+                                <th>Consideração</th>
+                                <td id="consideracao"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <p id="apelido" style="display:none"></p>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkRestricaoHro">
+                <label class="form-check-label" for="checkRestricaoHro">
+                    Mostrar Restrições de Horário na tabela.(Se nenhuma célula ficar vermelha é porque não tem restrição)
+                </label>
+            </div>
+            <br>         
+        </div>
+        {%endif%}
+        <div class="container">
+            <div class="row">
+                <div class="col-sm">
+                    <div style="border: gray;">
+                        {% for table_info in tables_info %}
+                            {%if table_info.mtrs%}
+                            <table class="table table-sm" id="tbl2">
+                                <thead>
+                                    <tr class="table-secondary">
+                                        <th scope="col">{{ table_info.title }}</th>
+                                        <th scope="col" class="text-center">Cód. da matéria</th>
+                                        <th scope="col" class="text-center">N° horas semanais</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mtr in table_info.mtrs %}
+                                        <tr>
+                                            <td>{{mtr.NomeDisc}}</td>
+                                            <td class="text-center">{{mtr.CoDisc}} {{mtr.Abreviacao}}</td>
+                                            <td class="text-center">{{mtr.CreditosAula}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {%endif%} 
+                        {% endfor %}
+            
+                        <a type="button" class="btn btn-secondary" href="{% url 'ferramenta_graduacao_si:menupage' %}">Voltar Menu</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+    </div>
+</body>
+</html>

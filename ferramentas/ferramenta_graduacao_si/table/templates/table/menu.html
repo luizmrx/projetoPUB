@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Menu</title>
+</head>
+
+<body>
+    <header class="navbar navbar-expand-lg navbar-light headerusp">
+        <!-- Canto Esquerdo - Logotipo ou Imagem -->
+        <div class="navbar-brand logo" href="#">
+            <img src="{% static 'images/logotipo.png'%}" alt="Logo"  class="d-inline-block align-top">
+        </div>
+
+        <!-- Canto Direito - Barra de Navegação -->
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item ">
+                    <p class="nav-link text-warning">Ano válido: {{ anoAberto }}</p>
+                </li>
+                <li class="nav-item">
+                    <p class="nav-link text-warning" id="nrousp">{{ request.user }}</p>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-warning" href="#">Ajuda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-warning" href="{% url 'hub:logout' %}">Sair</a>
+                </li>
+                
+            </ul>
+        </div>
+    </header>
+
+    <div class="row">
+        <div class="col-2">
+          <nav id="navbar-example3" class="h-100 flex-column align-items-stretch pe-4 border-end">
+                <nav class="nav nav-pills flex-column">
+                    <h5 class="text-warning-emphasis ms-3 mt-2">Funcionalidades</h5>
+                    <a class="nav-link" href="#item-0">Atribuição automática</a> 
+                    <a class="nav-link" href="#item-1">Grade horária</a>
+                    <a class="nav-link" href="{% url 'ferramenta_graduacao_si:page_rp1' %}">Grade horária (RP1)</a>
+                    <!--<a class="nav-link" href="#item-8">Upload RP1</a>-->
+                    <a class="nav-link" href="{% url 'ferramenta_graduacao_si:page_tadi' %}">Grade horária (TADI)</a>
+                    <!--<a class="nav-link" href="#item-9">Upload TADI</a>-->
+                    <a class="nav-link" href="#item-3">Upload de Dados</a>
+                    <a class="nav-link" href="#item-4">Baixar Planilhas</a>
+                    <hr>
+                    <h5 class="text-warning-emphasis ms-3 mt-2">Pendências {{anoAberto}}</h5>
+
+                    <a class="nav-link" href="#item-5">Docentes com menos de 8 horas-aula</a>
+                    <!--<a class="nav-link" href="#item-6">Docentes com menos de 8 horas-aula (Par)</a>-->
+
+                    <a class="nav-link" href="#item-7">Disciplinas obrigatórias sem horário alocado</a>
+                </nav>
+            </nav>
+          </nav>
+        </div>
+      
+        <div class="col-8 mt-3">
+            <div data-bs-spy="scroll" data-bs-target="#navbar-example3" data-bs-smooth-scroll="true" class="scrollspy-example-2" tabindex="0">
+                <div id="item-1">
+                    <h4>Escolher grade horária</h4>
+                    <div class="col-sm-8">
+                        <form id="semestreCurso" method="post" action = "redirect" >
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="select1">Selecione o semestre do curso...</label>
+                                <select required="required" class="form-select" name="select1" id="select1">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                </select>
+                            </div>
+                            <h6 class="mt-3">Na seleção de um anterior ao válido, 
+                                a tabela de grade horária somente será para visualização.
+                            </h6>
+                            <div class="form-group">
+                                <select required="required" class="form-select" name="anoSelecionado" id="ano">
+                                    {% for ano in anos_ant %}
+                                    <option value="{{ano}}">{{ano}}</option>
+                                    {% endfor%}
+                                    <option selected value="{{anoAberto}}">{{anoAberto}}</option>
+                                </select>
+                            </div>
+                            <input type="submit" class="btn btn-warning mt-3" value="Editar/Visualizar">
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="d-none" id="item-3">
+                    <h4>Carregue as preferências</h4>
+                    <div class="col-sm-8">
+                        <ul>
+                            <li><p>Essa planilhas deve ser vindas do forms de preferências, seguindo o modelo</p></li>
+                            <li><p>Carregar as preferências de disciplinas para todo o ano é essencial para a atribuição automática</p></li>
+
+                        </ul>
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:process_file' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                            <label for="inputFile" class="form-label">Escolha a planilha para upload</label>
+                            <input type="file" class="form-control" id="inputFile" name="excel_file">
+                            </div>
+                            <div class="mb-3">
+                            <label for="inputType" class="form-label">Tipo de Planilha</label>
+                            <select class="form-select" id="inputType" name="excel_type">
+                                <option value="pref_disc_hro">Preferências de Disciplinas e Horários</option>
+                                <option value="pref_hro_2">Preferências de Horário para o 2º semestre</option>
+                            </select>
+                            </div>
+                            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
+                        </form>
+                    </div>
+                    <hr>
+                    <div class="col-sm-8">
+                        <h4>Planilha de Resolução de Problema 1 (RP1)</h4>
+                        <ul>
+                            <li><p>Sempre cadastre os professores de SI pela tabela
+                                de grade horária RP1(menu ao lado), já que sistema não lê um professor de SI da coluna docentes da planilha.
+                            </p></li>
+                            <li><p>Após enviar a planilha, as turmas serão criadas e o sistema direcionará para a tabela editável
+                                de RP1.
+                            </p></li>
+                            <li><p> Toda vez que a planilha for recarregada o sistema apaga os cadastros anteriores no respectivo ano.
+                            </p></li>
+                            <li><p>O modelo da planilha para upload é o de RP1 2024, caso seja diferente do modelo erros podem ocorrer.
+                            </p></li>
+                           
+                        </ul>
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:load_rp1' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+            
+                            <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários RP1</label>
+                            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+                            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
+                        </form>
+                    </div>
+                    <hr>
+                    <div class="col-sm-8">
+                        <h4>Planilha de Tratamento e análise de Dados (TADI)</h4>
+                        <ul>
+                            <li>As mesmas considerações da planilha de RP1, descritas acima, são válidas para esta.</li>
+                        </ul>
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:load_tadi' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+            
+                            <label for="inputFile" class="form-label">Selecione a planilha de turmas e horários TADI</label>
+                            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+                            <button type="submit" class="btn btn-warning mb-3">Enviar</button>
+                        </form>
+                    </div>  
+
+                </div>
+                <div class="d-none" id="item-4">
+                    <h5>Considerações</h5>
+                    <ul>
+                        <li>Três planilhas serão baixadas compactadas em um arquivo.zip</li>
+                        <li>Uma é a de atribuição, nomeada como docentes.xlsx, e o restante de distribuição</li>
+                        <li>Use a de docentes.xlsx depois de gerar a atribuição automática, modifique-a e suba novamente ao sistema </li>
+                        <li>Já a de destribuição estará preenchidas conforme as grades forem completadas</li>
+                        <li>Obs: o código da planilha de destribuição é antigo e pode necessitar de revisões</li>
+                    </ul>
+
+                    <div class="col-sm-8">
+                        <form method="POST" action="{% url 'ferramenta_graduacao_si:download_zip_planilhas'%}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <select required="required" class="form-select" name="ano_xlsx" id="ano_xlsx">
+                                    {% for ano in anos_ant %}
+                                    <option value="{{ano}}">{{ano}}</option>
+                                    {% endfor%}
+                                    <option selected value="{{anoAberto}}">{{anoAberto}}</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="mt-3 btn btn-warning">Baixar</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="d-none" id="item-8">
+                     
+                </div>
+                <div class="d-none" id="item-9">
+                     
+                </div>
+
+                <div class="d-none" id="item-5">
+                    <div class="col-sm-10" id="pend_impar">
+                        <h5>Docentes com menos de 8 horas-aula (Ímpar)</h5>
+                        <p>*CH = carga horária já registrada no sistema</p>
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-warning">
+                                <th scope="col">Nome</th>
+                                <th scope="col">CH Ímpar</th>
+                            </thead>
+                            <tbody>
+                                {% for nome, values in falta_aula.items%} 
+                                {% if values.I != -1%} 
+                                <tr>
+                                    <th scope="row">{{nome}}</th>
+                                    <td>{{ values.I }}</td>
+                                </tr>
+                                {% endif%}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="col-sm-10" id="pend_par">
+                        <h5>Docentes com menos de 8 horas-aula (Par)</h5>
+                        <p>*CH = carga horária já registrada no sistema</p>
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-warning">
+                                <th scope="col">Nome</th>
+                                <th scope="col">CH Par</th>
+                            </thead>
+                            <tbody>
+                                {% for nome, values in falta_aula.items%}
+                                {% if values.P != -1%}   
+                                <tr>
+                                    <th scope="row">{{nome}}</th>
+                                    <td>{{ values.P }}</td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> 
+                </div>
+
+                <div class="d-none" id="item-6">
+                    
+                </div>
+                <div class="d-none" id="item-0">
+                    <div class="col-sm-10" id="pend_par">
+                        <h4>Gerar atribuição</h4>
+                        <ul>
+                            <li><p>Use essa função após abrir um novo ano de válido e ter feito o upload da planilha vinda
+                                do forms que contém as preferências dos professores para disciplinas de todo o ano.
+                            </p></li>
+                            <li><p>Para ver a planilha de atribuição gerada automaticamente use a opção "baixar planilhas" desse menu.
+                            </p></li>
+                            <li><p> Os professores atribuidos às disciplinas serão sugeridos no prenchimento das grades horárias</p></li>
+                            <li><p> NÂO preencha as grades antes de ter usado essa função.</p></li>
+                            <li><p> Ao clicar em gerar novamente o sistema apaga todas as turmas anteriormente criadas para o ano</p></li>
+                            <li><p>obs: Olhe o status pelo terminal, ainda falta criar uma caixa de texto para informar o status da criação</p></li>
+                            
+                        </ul>
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:gerar_atribuicao' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">Gerar</button>
+                        </form>
+                        <br>
+                        <h4>Upload</h4>
+                        
+                        <form method="post" action="{% url 'ferramenta_graduacao_si:load_atribuicao' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+            
+                            <label for="inputFile" class="form-label">Após baixar a planilha docentes.xlsx, que é a de atribuição, faça o upload dela modificada abaixo.
+                                Ela servirá para sugerir professores nas tabelas de grades horárias do ano válido.</label>
+                            <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
+                            <button type="submit" class="btn btn-warning">Enviar</button>
+                        </form>
+
+                        <p> Obs: gerencie as mudanças nas justificativas (licença-premio, pós-doc etc) pela área admin</p>
+
+                    </div>
+                </div>
+                <div class="d-none" id="item-7">
+                    <div class="col-12" id="disc_sem_turma">  
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-warning">
+                                <th scope="col" class="align-middle" >Nome</th>
+                                <th scope="col" class="align-middle" >Abreviação</th>
+                                <th scope="col" class="align-middle" > Turma sem período/dia alocado</th>
+                                <th scope="col" class="align-middle" >Semestre</th>
+                            </thead>
+                            <tbody>
+                                <th colspan="4" class="table-secondary p-2 text-center">ÍMPAR</th>
+                                {% for inf_dict in sem_tur.values%}
+                                {% if inf_dict.smt == "impar" %}  
+                                <tr>
+                                    <td>{{ inf_dict.disc.NomeDisc}}</td>
+                                    <td>{{ inf_dict.disc.Abreviacao }}</td>
+                                    <td>{{ inf_dict.faltando }}
+                                    <td>{{ inf_dict.disc.SemestreIdeal }}</td>
+                                </tr>
+                                {% endif%}
+
+                                {% endfor %}
+                                <th colspan="4" class="table-secondary p-2 text-center">PAR</th>
+                                {% for inf_dict in sem_tur.values%}
+                                {% if inf_dict.smt == "par" %}  
+                                <tr>
+                                    <td>{{ inf_dict.disc.NomeDisc}}</td>
+                                    <td>{{ inf_dict.disc.Abreviacao }}</td>
+                                    <td>{{ inf_dict.faltando }}
+                                    <td>{{ inf_dict.disc.SemestreIdeal }}</td>
+                                </tr>
+                                {% endif%}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>
+
+
+<script>
+    $(document).ready(function() {
+       
+        $('.nav-link').click(function(e) {
+            const targetId = $(this).attr('href'); 
+            $('#item-0, #item-1, #item-3, #item-4, #item-5, #item-6, #item-7, #item-8, #item-9').addClass("d-none")
+            $(targetId).removeClass('d-none')
+            
+        });
+    });
+ </script>
+
+
+
+

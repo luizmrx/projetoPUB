@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Carrega o framework Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <!-- Carrega a biblioteca jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Carrega a biblioteca jQuery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <!-- Ícone -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+   
+    {%load static %}
+    <script type="module" src="{% static 'table/js/rp1Table.js' %}"></script>
+    {{ auto_profs|json_script:"auto_profs"}}
+    
+    <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
+    <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+
+    <title>RP1</title>
+
+    {{ rest_horarios|json_script:"rest"}}
+    {{ impedimentos_totais|json_script:"impedimentos_totais"}}
+
+</head>
+
+<body>
+    <header class="navbar navbar-expand-lg navbar-light headerusp">
+        <!-- Canto Esquerdo - Logotipo ou Imagem -->
+        <div class="navbar-brand logo" href="#">
+            <img src="{% static 'images/logotipo.png'%}" alt="Logo"  class="d-inline-block align-top">
+        </div>
+
+        <!-- Canto Direito - Barra de Navegação -->
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item ">
+                    <p class="nav-link text-warning">Ano válido: {{anoAberto}}</p>
+                </li>
+                <li class="nav-item">
+                    <p class="nav-link text-warning" id="nrousp">{{ request.user }}</p>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-warning" href="#">Ajuda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-warning" href="{% url 'hub:logout' %}">Sair</a>
+                </li>
+                
+            </ul>
+        </div>
+    </header>
+    {%if text_erro%}
+    <script>
+        $(document).ready(function () {
+            $('#myMd').modal('show')
+        })
+    </script>
+    {%endif%}
+    
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="myModalLabel"></h5>
+            </div>
+            <div class="modal-body" id="modalBody">
+            <!-- Aqui será exibido o conteúdo das mensagens -->
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+    <div style="width:90%; font-size: 12px;" class="mx-auto">    
+        <div class="modal fade" id="myMd" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">Erro de registro</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Turmas não registradas: {{text_erro}}</p>
+                    <p>Verifique se o valor do horário está correto</p>
+                    <ul>
+                        <li>Dias válidos: "Seg", "Ter", "Qua", "Qui", "Sex"</li>
+                        <li>Horários válidos: "08h - 12h", "14h - 18h", "19h - 22h45"</li>
+                        <li> Os dois valores devem estar separados por um espaço</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+        </div>
+          
+        <div id="url-data" data-url="{% url 'ferramenta_graduacao_si:save_p' %}"></div>
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <span id="closePopup" class="close">&times;</span>
+                <h4>Atribua professores para RP1</h4>
+                
+                <p>Professor:</p>
+                <input type="text" id="prof_rp1" class="form-control autocomplete campo1" placeholder="Digite o nome">
+                <p id="0" style="display:none"></p>
+                
+                <p>Professor:</p>
+                <input type="text" id="prof_rp2" class="form-control autocomplete campo2" placeholder="Digite o nome">
+                <p id="1" style="display:none"></p>
+                
+                <p>Professor:</p>
+                <input type="text" id="prof_rp3" class="form-control autocomplete campo3" placeholder="Digite o nome">
+                <p id="2" style="display:none"></p>
+
+                <input type="submit" class="btn btn-secondary" id="submitForm" value="Salvar">
+            </div>
+        </div>
+
+        <h4>Tabela de atribuição e horários para Resolução de Problemas 1(RP1)</h4>
+
+        <table class="table table-bordered table-hover mt-3">
+            <thead class="table-warning">
+                <th scope="col" class="align-middle" >TURMA</th>
+                <th scope="col" class="align-middle" >HORARIO</th>
+                <th scope="col" class="align-middle" >CURSOS</th>
+                <th scope="col" class="align-middle" >DOCENTES</th>
+                <th scope="col" class="align-middle  text-nowrap">PROFS. SI</th>
+                <th scope="col" class="align-middle"> EDITAR</th>
+            </thead>
+            <tbody>
+                {% for query in rp1%}
+                <tr>
+                    
+                    {% for p in query.professor_si.all%}
+                    <td class="d-none n_completo">{{p}}</td>   
+                    {% endfor%}
+                    
+                    <td class="codigo">{{ query.codigo}}</td>
+                    {% for d in query.diaaularp1_set.all%}
+                    <td class="text-nowrap" style="text-transform: capitalize;">{{ d.dia_semana }} {{d.horario}}</td>
+                    {% endfor%}
+                    
+                    <td>{{ query.cursos }}
+                    <td>{{ query.profs_adicionais }}</td>
+                    <td class="d-none .id">{{query.id}}</td>
+                    <td class="si_profs">
+                    {% for p in query.professor_si.all%}
+                        {{p.Apelido}},    
+                    {% endfor%}
+                    </td>
+                    <td class="align-middle text-center" style="font-size: 2em;">
+                        <i class="bi bi-pencil-square icone"></i>
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+        <a type="button" class="btn btn-warning mb-3" href="{% url 'ferramenta_graduacao_si:menupage' %}">Voltar Menu</a>
+    </div>
+</body>
+</html>
