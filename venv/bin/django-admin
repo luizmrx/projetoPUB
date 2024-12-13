@@ -1,4 +1,6 @@
-#!/home/lucas/Desktop/projetos/IC/hub_ferramentas_si/hub_ferramentas_SI/venv/bin/python3
+#!/bin/sh
+'''exec' "/home/luiz/Documentos/Pub_ USP/Projeto_continuacao/hub_ferramentas_si/venv/bin/python" "$0" "$@"
+' '''
 # -*- coding: utf-8 -*-
 import re
 import sys
