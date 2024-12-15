@@ -85,7 +85,7 @@ def load_tadi(request):
         else:
             turmas_erro += f"{row[0]}, "
 
-    return redirect("page_tadi", [turmas_erro])
+    return redirect("ferramenta_graduacao_si:page_tadi", [turmas_erro])
 
 
 @login_required

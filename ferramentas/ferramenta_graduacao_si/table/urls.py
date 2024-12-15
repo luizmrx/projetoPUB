@@ -13,7 +13,7 @@ urlpatterns = [
         name="download_zip_planilhas",
     ),
     path("", views.menu, name="menupage"),
-    path("redirect", views.redirect, name="redirect"),
+    path("redirect", views.redirecionar, name="redirect"),
     path("process_file", views.pref_planilha, name="process_file"),
     
 

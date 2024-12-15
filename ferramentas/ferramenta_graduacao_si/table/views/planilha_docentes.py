@@ -153,8 +153,8 @@ def criar_atribuicoes(request):
 
     Turma.objects.filter(CodTurma__in=(99, 98, 97), Ano=ano_atual).delete()
     
-    TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17)), ano=ano_atual).delete()
-    RP1TurmaPreview.objects.filter(codigo=99, ano=ano_atual).delete()
+    TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17))).delete()
+    RP1TurmaPreview.objects.filter(codigo=99).delete()
     nova_turma = RP1TurmaPreview.objects.create(
         codigo=99,
         ano=ano_atual
@@ -481,7 +481,7 @@ def completa_atrib_tadi_com_hist(ano):
     profs_list = profs_mais_8hrs(disc)
     p_justf = justificativaMenos8Horas.objects.filter(semestre_ano="I").values_list('professor', flat=True).distinct()
 
-    hist = Professor.objects.exclude(Q(NomeProf__in=profs_list) | Q(p_justf)).annotate(num_turmas=Count('taditurma')).order_by('-num_turmas')
+    hist = Professor.objects.exclude(Q(NomeProf__in=profs_list) | Q(pk__in=p_justf)).annotate(num_turmas=Count('taditurma')).order_by('-num_turmas')
     t_faltando = math.floor((16 - num_turmas) / 2)
 
     i = 0

@@ -24,7 +24,7 @@ def load_rp1(request):
         return redirect("ferramenta_graduacao_si:page_rp1")
 
     if not excel_file.name.endswith(".xlsx"):
-        return redirect("page_rp1")
+        return redirect("ferramenta_graduacao_si:page_rp1")
 
     workbook = openpyxl.load_workbook(excel_file)
     worksheet = workbook.active
@@ -52,11 +52,11 @@ def load_rp1(request):
 
             except Exception as e:
                 print(e)
-                return redirect("page_rp1")
+                return redirect("ferramenta_graduacao_si:page_rp1")
         else:
             turmas_erro += f"{row[1]}, "
 
-    return redirect("page_rp1", [turmas_erro])
+    return redirect("ferramenta_graduacao_si:page_rp1", [turmas_erro])
 
 
 @login_required
