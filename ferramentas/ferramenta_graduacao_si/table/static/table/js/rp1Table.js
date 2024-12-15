@@ -54,7 +54,7 @@ $(document).ready(function() {
                 let results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
                 response(results);
             },
-            minLength: 2
+            minLength: 0
         })
     });
 

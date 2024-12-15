@@ -131,7 +131,7 @@ def index(request, semestre, ano):
                 impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
 
     if ano == AnoAberto.objects.get(id=1).Ano:
-        discs = Disciplina.objects.filter(ativa=True)
+        discs = Disciplina.objects.filter(ativa=True).exclude(CoDisc__in=("ACH0021", "ACH0041"))
     else:
         discs = Disciplina.objects.all()
 
@@ -179,7 +179,8 @@ def index(request, semestre, ano):
     # prepara os dados para tabela de preferencias
     pref_semestre = Preferencias.objects.filter(
         CoDisc__SemestreIdeal=semestre
-    ).order_by("CoDisc__Abreviacao")
+    ).exclude(CoDisc__CoDisc__in=("ACH0021", "ACH0041")).order_by("CoDisc__Abreviacao")
+
     tbl_pref = [[disc.Abreviacao for disc in disc_obrig]]
     for row in range(1, 4):
         tbl_pref.append([])
@@ -237,6 +238,12 @@ def gera_sugestoes(ano, tds):
         elif qtd_turma_manual < qtd2_turma_auto:
             key = f"{vlr_auto.CoDisc.CoDisc} {vlr_auto.CoDisc.Abreviacao}"
             cod_mtr_sugestao[key].add(vlr_auto.NroUSP.Apelido)
+
+
+    rp2 = RP2TurmaPreview.objects.all().first()
+    for prof_rp2 in rp2.professor_si.all():
+        cod_mtr_sugestao["ACH0042 RP2"].add(prof_rp2.NomeProf)
+
 
     #convertendo para lista os sets pois o json não aceita esse tipo
     for key, value in cod_mtr_sugestao.items():
