@@ -152,8 +152,7 @@ def criar_atribuicoes(request):
     ano_atual = int(AnoAberto.objects.get(id=1).Ano)
 
     Turma.objects.filter(CodTurma__in=(99, 98, 97), Ano=ano_atual).delete()
-    
-    TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17))).delete()
+    TadiTurmaPreview.objects.all().delete()
     RP1TurmaPreview.objects.filter(codigo=99).delete()
     nova_turma = RP1TurmaPreview.objects.create(
         codigo=99,
@@ -177,7 +176,7 @@ def criar_atribuicoes(request):
     cria_atribuicao_com_pref_rp1(nova_turma)
     cria_atribuicao_com_pref_rp2()
 
-    cria_atribuicao_com_pref_tadi(n_tadi)
+    cria_atribuicao_com_pref_tadi()
     completa_atrib_tadi_com_hist(ano_atual)
 
     cria_atribuicoes_optativas(ano_atual)
@@ -411,12 +410,11 @@ def profs_mais_8hrs(disc):
     return mais_8hrs
 
 
-def cria_atribuicao_com_pref_tadi(num_turma):
-
+def cria_atribuicao_com_pref_tadi():
     ano_atual = AnoAberto.objects.get(id=1).Ano
     tadi = Disciplina.objects.get(CoDisc="ACH0021")
-
     p_justf = justificativaMenos8Horas.objects.filter(semestre_ano="I").values_list('professor', flat=True).distinct()
+    num_turma = TadiTurmaPreview.objects.filter(ano=ano_atual).count() + 1
 
     for prioridade in range(1, 4):
 
@@ -434,7 +432,7 @@ def cria_atribuicao_com_pref_tadi(num_turma):
 
         turmas_faltando = 16 - turmas_tadi
 
-        if num_pref > turmas_faltando:
+        if num_pref> turmas_faltando:
 
             for i in range(0, turmas_faltando):
 
@@ -445,18 +443,22 @@ def cria_atribuicao_com_pref_tadi(num_turma):
 
                     nova_turma = TadiTurmaPreview.objects.create(
                         codigo=num_turma,
-                        ano=ano
+                        ano=ano_atual
                     )
 
-                    nova_turma.professor_si.add(hist[i].NumProf)
+                    nova_turma.professor_si.add(pref_disc[i].NumProf)
                     num_turma = num_turma + 1
         else:
+            # print(f"numero de turmas aqui no else:{num_turma}, numpref: {num_pref}")
             for i in range(0, num_pref):
                 cadastra_turmas_auto_tadi(pref_disc[i], num_turma)
                 num_turma += 2
 
 
 def cadastra_turmas_auto_tadi(pref, num):
+    if num >= 16:
+        return
+
     ano = AnoAberto.objects.get(id=1).Ano
 
     y = num + 2
@@ -514,13 +516,13 @@ def cria_atribuicao_profs_sem_pref(ano_atual, num_tadi, num_rp1, rp1_turma):
     profs_sem_pref = Professor.objects.filter(em_atividade=True).exclude(
         Q(preferencias__isnull=False)
     ).distinct()
-
+    ano = AnoAberto.objects.get(id=1).Ano
     for prof in profs_sem_pref:
         p_turmas = (prof.turma_set.filter(Ano=ano_atual - 1, CoDisc__TipoDisc="obrigatoria")
                     .exclude(CoDisc__in=("ACH0041", "ACH0021", "ACH0042")))
 
         for t in p_turmas:
-            turmas_disc = Turma.objects.filter(CoDisc=t.CoDisc, Ano=ano_atual, Eextra="N").count()
+            turmas_disc = Turma.objects.filter(CoDisc=t.CoDisc, Ano=ano, Eextra="N").count()
 
             if not mais8_horas_aula_prof(t.CoDisc, prof) and turmas_disc < 3:
                 cadastra_turma_ano_anterior(t)
@@ -533,7 +535,7 @@ def cria_atribuicao_profs_sem_pref(ano_atual, num_tadi, num_rp1, rp1_turma):
         for _ in prof.taditurma_set.filter(ano=ano_atual - 1):
             if num_tadi < 16:
                 nv_turma = TadiTurmaPreview.objects.create(
-                    ano=ano_atual,
+                    ano=ano,
                     codigo=num_tadi
                 )
                 nv_turma.professor_si.add(prof)
@@ -609,7 +611,7 @@ def carregar_atribuicao(request):
     profs = Professor.objects.all()
     ano_atual = AnoAberto.objects.get(id=1).Ano
     Turma.objects.filter(CodTurma__in=(99, 98, 97), Ano=ano_atual).delete()
-    TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17)), ano=ano_atual).delete()
+    TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17))).delete()
     RP1TurmaPreview.objects.filter(codigo=99, ano=ano_atual).delete()
     RP2TurmaPreview.objects.filter(codigo=99, ano=ano_atual).delete()
 
@@ -654,7 +656,8 @@ def carregar_atribuicao(request):
             if codisc == "ACH0041":
                 nova_turma.professor_si.add(prof_obj)
 
-            elif codisc == "ACH0021":
+            elif codisc == "ACH0021" and num_turma <= 17:
+
                 tadi_turma = TadiTurmaPreview.objects.create(
                     codigo=num_turma,
                     ano=ano_atual
