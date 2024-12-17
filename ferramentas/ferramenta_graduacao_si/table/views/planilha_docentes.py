@@ -150,7 +150,6 @@ def preenche_doc_rp1(sheet_doc, row, col, turma):
 def criar_atribuicoes(request):
     discs = Disciplina.objects.filter(ativa=True, TipoDisc="obrigatoria")
     ano_atual = int(AnoAberto.objects.get(id=1).Ano)
-
     Turma.objects.filter(CodTurma__in=(99, 98, 97), Ano=ano_atual).delete()
     TadiTurmaPreview.objects.all().delete()
     RP1TurmaPreview.objects.filter(codigo=99).delete()
@@ -311,6 +310,7 @@ def cria_atribuicao_com_pref_rp1(nova_turma):
         #considerando que só haja uma instância q fica gravada por ano
         num_profs = nova_turma.professor_si.count()
 
+
         if num_profs >= 6:
             continue
 
@@ -318,10 +318,8 @@ def cria_atribuicao_com_pref_rp1(nova_turma):
 
         if num_pref > profs_faltando:
 
-            hist = Professor.objects.annotate(num_turmas=Count('rp1turma')).order_by('-num_turmas')
-
             for i in range(0, profs_faltando):
-                nova_turma.professor_si.add(hist[i])
+                nova_turma.professor_si.add(pref_disc[i].NumProf)
 
         else:
             for i in range(0, num_pref):
@@ -517,6 +515,9 @@ def cria_atribuicao_profs_sem_pref(ano_atual, num_tadi, num_rp1, rp1_turma):
         Q(preferencias__isnull=False)
     ).distinct()
     ano = AnoAberto.objects.get(id=1).Ano
+    rp1 = Disciplina.objects.get(CoDisc="ACH0041")
+    tadi = Disciplina.objects.get(CoDisc="ACH0021")
+
     for prof in profs_sem_pref:
         p_turmas = (prof.turma_set.filter(Ano=ano_atual - 1, CoDisc__TipoDisc="obrigatoria")
                     .exclude(CoDisc__in=("ACH0041", "ACH0021", "ACH0042")))
@@ -528,12 +529,12 @@ def cria_atribuicao_profs_sem_pref(ano_atual, num_tadi, num_rp1, rp1_turma):
                 cadastra_turma_ano_anterior(t)
 
         for _ in prof.rp1turma_set.filter(ano=ano_atual - 1):
-            if num_rp1 < 6:
+            if num_rp1 < 6 and not mais8_horas_aula_prof(rp1, prof):
                 rp1_turma.professor_si.add(prof)
                 num_rp1 += 1
 
         for _ in prof.taditurma_set.filter(ano=ano_atual - 1):
-            if num_tadi < 16:
+            if num_tadi < 16 and not mais8_horas_aula_prof(tadi, prof):
                 nv_turma = TadiTurmaPreview.objects.create(
                     ano=ano,
                     codigo=num_tadi
