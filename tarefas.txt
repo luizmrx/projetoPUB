@@ -1,0 +1,22 @@
+***Este documento busca apresentar os erros encontrados no sistema e designar quem irá resolvê-lo
+link do doc: https://docs.google.com/document/d/1LQzOS9p85gwmXJJzuW_YYNk8dBVxGpnbM8f7dRoLyNQ/edit?usp=sharing
+
+
+
+O sistema permite alocar um mesmo professor, no mesmo dia e horário, para diferentes turmas de TADI e da atribuição, não ocorre nenhum alerta ou bloqueio.
+
+A página de TADI não está exibindo as cores das preferências dos horários dos professores. Note que a página de RP1 exibe as cores sem nenhum tipo de problema. Sugestão: analisar o código da página de RP1 e fazer uma implementação similar na página de TADI. -> Samuel
+
+A página de RP1 permite adicionar o mesmo professor, no mesmo dia e horário, para mais de uma turma. Se isso ocorrer, o sistema não impedirá o conflito de horários com a planilha de atribuição. Também não impedirá se houver dias diferentes.
+
+O sistema não permite alocar o mesmo professor de RP! em alguma outra disciplina, o mesmo dia e horário, conforme o esperado. Porém, a mensagem de erro aparece com um texto estranho. -> Luiz
+
+
+A sigla da disciplina não aparece na planilha gerada.
+ 
+Dificuldade em excluir alguma disciplina na planilha do site já que não podemos apenas deletar o conteúdo pois o sistema não permite. Para conseguir apagar a disciplina temos que substituir o conteúdo por “espaço”, somente assim o sistema permite. -> Luiz
+
+O sistema permite extrapolar a quantidade de aulas para uma turma, colocando 2 aulas para um professor e as demais para outro.-> Luiz
+
+O centro da página fica em branco se clicarmos no ano válido ou no admi, canto superior direito
+
