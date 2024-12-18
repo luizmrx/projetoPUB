@@ -1,5 +1,7 @@
 // código daptado de rp1Table.js
 const auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
+const profs_impedimento = JSON.parse(document.getElementById("profs_impedimento").textContent);
+const profs_nao_gosta = JSON.parse(document.getElementById("profs_nao_gosta").textContent);
 
 function openModal(title, messages) {
     const modalBody = document.getElementById("modalBody");
@@ -10,6 +12,22 @@ function openModal(title, messages) {
 }
 
 $(document).ready(function() {
+    //Colore os profs no carregamento da página
+    $('.si_profs').each(function () {
+        const apelido_prof = $(this).text().trim()
+        if (profs_nao_gosta.includes(apelido_prof)) 
+            $(this).css("color", "orange");
+
+        if (profs_impedimento.includes(apelido_prof)) 
+            $(this).css("color", "red");
+        
+        
+    });
+    
+    // Remove a classe .si_profs de todas as células
+    $('.si_profs').removeClass('si_profs');
+
+
     $(".icone").mouseover(function() {
         $(this).css("color", "blue");
     });
@@ -103,6 +121,7 @@ $(document).ready(function() {
                     console.log(data)
                     const erros = data["erros"]
                     const alertas = data["alertas"]
+                    const restricao_prof = data["restricao_prof"]
                     const cred_err = erros.hasOwnProperty("credito")
                     const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
                     if(prof_hr_err){
@@ -134,11 +153,20 @@ $(document).ready(function() {
                         }
                         openModal("Warning(s)", alerta_msg);
                     }
+
+                    if(restricao_prof["prof_nao_gosta_hr"]){
+                        cell.css("color", "orange");
+                    }
+
+                    if(restricao_prof["impedimento"]){
+                        cell.css("color", "red");
+                    }
                 },
                 error: (error) => {
                     alert("Ocorreu um erro ao manipular as informações");
                 }
             });
+
 
             const row = cell.closest('tr');
             row.find('.n_completo').remove();

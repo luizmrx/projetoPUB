@@ -33,11 +33,31 @@ def page_tadi(request, text=""):
 
     text = text.replace("[", "").replace("]", "").replace("'", "")
 
+    profs_nao_gosta = []
+    profs_impedimento = []
+
+    for tur in tadi_turmas:
+        prof_bd = tur.professor_si.first()
+        if not prof_bd:
+            continue
+
+        restricoes = prof_bd.restricao_set.all()
+        rest = prof_na_restricao(tur, restricoes)
+        if rest["prof_nao_gosta_hr"]:
+            profs_nao_gosta.append(prof_bd.Apelido)
+
+        if rest["impedimento"]:
+            profs_impedimento.append(prof_bd.Apelido)
+
+    print(profs_nao_gosta)
+
     context = {
         "rp1": tadi_turmas,
         "auto_profs": auto_profs,
         "text_erro": text,
-        "anoAberto": AnoAberto.objects.get(id=1).Ano
+        "anoAberto": AnoAberto.objects.get(id=1).Ano,
+        "profs_impedimento": profs_impedimento,
+        "profs_nao_gosta": profs_nao_gosta
     }
     return render(request, "table/tadiTable.html", context)
 
@@ -87,6 +107,45 @@ def load_tadi(request):
 
     return redirect("ferramenta_graduacao_si:page_tadi", [turmas_erro])
 
+def prof_na_restricao(tur, restricoes):
+    impedimento = False
+    nao_gostaria = False
+
+    dia_aula_tadi = DiaAulaTadi.objects.get(turma_tadi=tur)
+
+    # dicionário de correspondencia dos dias da semana
+    corresp_dias_semana_restricao = {
+        "Seg": "segunda",
+        "Ter": "terca",
+        "Qua": "quarta",
+        "Qui": "quinta",
+        "Sex": "sexta"
+    }
+    # dicionário de correspondencia de horário para período
+    corresp_horarios_restricao = {
+        "8:00 - 09:45h": "manha",
+        "10:15 - 12:00h": "manha",
+        "14:00 - 15:45h": "tarde",
+        "16:15 - 18:00h": "tarde",
+        "19:00 - 20:45h": "noite",
+        "21:00 - 22:45h": "noite"
+    }
+
+    for restricao in restricoes:
+        if (restricao.dia == corresp_dias_semana_restricao[dia_aula_tadi.dia_semana] and
+                restricao.periodo == corresp_horarios_restricao[dia_aula_tadi.horario]):
+
+            if restricao.impedimento:
+                impedimento = True
+
+            nao_gostaria = True
+
+
+    return {
+        'impedimento': impedimento,
+        'prof_nao_gosta_hr': nao_gostaria
+    }
+
 
 @login_required
 def save_prof_tadi(request):
@@ -100,7 +159,6 @@ def save_prof_tadi(request):
 
     erros = {}
     alertas = {}
-    print(data)
 
     ano = AnoAberto.objects.get(id=1).Ano
     tur = TadiTurma.objects.get(id=data["id"])
@@ -109,9 +167,6 @@ def save_prof_tadi(request):
     if data["lProfs"] == ['']:
         return JsonResponse({'status': 'String vazia'})
 
-    dia_aula_tadi = DiaAulaTadi.objects.get(turma_tadi = tur)
-    # devemos adaptaros horarios e dias para serem compatíveis com as restrições
-    # dicionário de correspondencia dos dias da semana
     corresp_dias_semana = {
         "Seg": 0,
         "Ter": 2,
@@ -129,6 +184,8 @@ def save_prof_tadi(request):
         "21:00 - 22:45h": 7
     }
 
+
+    dia_aula_tadi = DiaAulaTadi.objects.get(turma_tadi=tur)
     prof_bd = Professor.objects.get(NomeProf=data["lProfs"][0])
 
     data = {
@@ -151,7 +208,7 @@ def save_prof_tadi(request):
         except Exception as e:
             print("erroooo")
 
-    print(erros)
-    print(alertas)
 
-    return JsonResponse({'erros': erros, 'alertas': alertas})
+    restricoes = prof_bd.restricao_set.all()
+
+    return JsonResponse({'erros': erros, 'alertas': alertas, 'restricao_prof': prof_na_restricao(tur, restricoes)})

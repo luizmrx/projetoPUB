@@ -109,6 +109,7 @@ def page_rp1(request, text=""):
 
     text = text.replace("[", "").replace("]", "").replace("'", "")
 
+    print(restricoes_profs)
     context = {
         "rp1": rp1_turmas,
         "auto_profs": auto_profs,

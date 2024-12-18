@@ -15,7 +15,6 @@ $(function() {
     coresRestrições();
 })
 
-
 $(document).ready(function() {
     $(".icone").mouseover(function() {
         $(this).css("color", "blue");
@@ -191,8 +190,7 @@ $(document).ready(function() {
 
                     mostrarProximoErro(); // Inicia exibindo os erros
 
-                    
-                    
+                         
                 },
                 error: (error) => {
                     alert("Ocorreu um erro ao manipular as informações");
@@ -274,6 +272,7 @@ function coresRestrições() {
 
     let cells_profs = $('.si_profs');
     let cells_turmas = $('.codigo');
+    
     for(let i = 0; i < 15; i++) {
         let conteudoCelulaProfs = cells_profs.eq(i)[0].innerText.split(",");
         let turma = cells_turmas.eq(i)[0].innerText
@@ -281,6 +280,7 @@ function coresRestrições() {
 
             if(apelido) {
                 if(apelido[0] == " ") apelido = apelido.substring(1)
+                
                 if(arrayCompare(getCellIndexes(apelido)[0], correspondencia[turma]) == correspondencia[turma].length) {
                     console.log(cells_profs.eq(i))
                     cells_profs.eq(i).addClass("prof-na-restricão")

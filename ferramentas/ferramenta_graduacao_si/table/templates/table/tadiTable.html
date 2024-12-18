@@ -24,6 +24,8 @@
     {%load static %}
     <script type="module" src="{% static 'table/js/tadiTable.js' %}"></script>
     {{ auto_profs|json_script:"auto_profs"}}
+    {{ profs_impedimento|json_script:"profs_impedimento"}}
+    {{ profs_nao_gosta|json_script:"profs_nao_gosta"}}
     
     <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
     <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
@@ -146,7 +148,7 @@
                     <td class="d-none .id">{{query.id}}</td>
                     <td class="si_profs">
                     {% for p in query.professor_si.all%}
-                        {{p.Apelido}},    
+                        {{p.Apelido}}    
                     {% endfor%}
                     </td>
                     <td class="align-middle text-center" style="font-size: 2em;">
