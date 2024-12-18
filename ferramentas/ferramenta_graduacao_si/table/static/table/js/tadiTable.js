@@ -100,7 +100,8 @@ $(document).ready(function() {
             $(idAlerta).css("font-size", "12px");
             $(idAlerta).show()
             validInput = false;
-        }       
+        }
+        let prof_hr_err = false;
 
         if(validInput){
             const myEvent = { 
@@ -108,6 +109,7 @@ $(document).ready(function() {
                 lProfs: lProfs,
                 csrfmiddlewaretoken: window.CSRF_TOKEN
             };
+            
             $.ajax({
                 url: $("#url-data").data("url"),
                 type: "POST",
@@ -122,23 +124,18 @@ $(document).ready(function() {
                     const erros = data["erros"]
                     const alertas = data["alertas"]
                     const restricao_prof = data["restricao_prof"]
-                    const cred_err = erros.hasOwnProperty("credito")
-                    const prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
+                    // const cred_err = erros.hasOwnProperty("credito")
+                    if(erros && erros.hasOwnProperty("prof_msm_hr")){
+                        prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
+                    } 
+                    
                     if(prof_hr_err){
                         openModal("ERRO", erros["prof_msm_hr"]);
-                        $('#myModal').on('hidden.bs.modal', function () {
-                            editable.edit(cell.get(0), row, col, content["extra"]);
-                            return;
-                        });
+                    }else{
+                        cell.html(resp);
                     }
-                    else if(cred_err) {
-                        openModal("ERRO", erros["credito"]);
-                        $('#myModal').on('hidden.bs.modal', function () {
-                            editable.edit(cell_cod, row, col, content["extra"]);
-                            return;
-                        });       
-                    }
-                    else if(Object.keys(alertas).length !== 0){
+                    
+                    if(alertas && Object.keys(alertas).length !== 0){
 
                         let alerta_msg = "";
     
@@ -152,29 +149,31 @@ $(document).ready(function() {
                             alerta_msg += alertas["alert2"]
                         }
                         openModal("Warning(s)", alerta_msg);
-                    }
 
-                    if(restricao_prof["prof_nao_gosta_hr"]){
+                    }
+                    
+                    if(restricao_prof && restricao_prof["prof_nao_gosta_hr"]){
                         cell.css("color", "orange");
                     }
 
-                    if(restricao_prof["impedimento"]){
+                    if(restricao_prof && restricao_prof["impedimento"]){
                         cell.css("color", "red");
                     }
+
+                    
                 },
                 error: (error) => {
                     alert("Ocorreu um erro ao manipular as informações");
                 }
             });
 
-
             const row = cell.closest('tr');
             row.find('.n_completo').remove();
             lProfs.forEach(nome => {
                 row.append('<td class="d-none n_completo">'+nome+'</td>')
             });
-            $("#popup").hide();
-            cell.html(resp.join(","));
+            
+            $("#popup").hide();            
         }
     }
 });

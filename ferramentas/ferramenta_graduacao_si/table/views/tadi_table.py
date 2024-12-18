@@ -210,5 +210,7 @@ def save_prof_tadi(request):
 
 
     restricoes = prof_bd.restricao_set.all()
+    print(erros)
+    print(alertas)
 
     return JsonResponse({'erros': erros, 'alertas': alertas, 'restricao_prof': prof_na_restricao(tur, restricoes)})

@@ -507,8 +507,8 @@ def aula_msm_horario(inf, ano, data, erros):
 
 def erro_msm_hr(dia_aula, erros, inf):
     msg = (
-                f"Conflito na matéria RP1 {str(dia_aula.first())}"
-                f" do professor(a) {inf['professor']}"
+                f"Professor(a) {inf['professor']} já possui"
+                f" a disciplina de RP1 gravada nesse horário"
             )
     erros["prof_msm_hr"] = msg
 
