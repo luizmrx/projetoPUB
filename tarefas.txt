@@ -14,6 +14,9 @@ O sistema permite extrapolar a quantidade de aulas para uma turma, colocando 2 a
 
 O centro da página fica em branco se clicarmos no ano válido ou no admi, canto superior direito
 
+Existe uma diferença de comportamento quando ocorre um conflito de horários entre a planilha de atribuição e de rp1. Se cadastrarmos um professor no horário das 19:00 - 20:45 e tentarmos cadastro-lo, no mesmo dia e horário, em uma turma de rp1, o sistema irá exibir uma mensagem de erro e não irá preencher a célula do professores na página de rp1. Porém, se cadastrarmos o mesmo professor na planilha de atribuição no horário das 21:00 - 22:45 e tentarmos cadastra-lo em uma turma de rp1, o sistema irá exibir uma mensagem de erro mas o nome do professor continuará marcado no página, ou seja, exibe a mensagem de erro mas não impede que aconteça.
+
+Existe um erro na hora de fazermos uma edição na planilha de atribuição bem especifico. Imagine que o usuario já tenha preenchido um campo de disciplina e de professor de forma correta. Porém, em determinado momento, o usuário deseja modificar o valor desse campo. A célula dos professores não é editável, logo o usuário irá editar o campo da disciplina. Porém ao editar o campo da disciplina, o campo dos professores não é atualizado e também não permite nenhuma modificação, causando um erro de haver uma disciplina para um professor que não deveria dar essa matéria. -> Luiz
 
 Já resolvidos:
 
