@@ -505,7 +505,7 @@ const editable = {
     // (C) END "EDIT MODE"
     close: evt => {
         if (evt.target !== editable.selected) {
-            const valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
+            let valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
             const col = editable.colIndex;
             const row = editable.rowIndex;
             
@@ -520,7 +520,9 @@ const editable = {
 
             const colCod = col % 2 !== 0;
             let validInput = false;
-
+            
+            //Note que o valueUser nunca será "", se o usuário não escrever nada, o seu valor será <br>.
+            if(valueUser==="<br>")valueUser="";
             if (colCod && valueUser !== "") {
                 let ExistMtr = false;
                 if (cods_auto_obrig.hasOwnProperty(valueUser)) ExistMtr = true;
