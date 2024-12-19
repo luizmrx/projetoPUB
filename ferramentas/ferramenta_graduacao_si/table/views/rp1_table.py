@@ -190,6 +190,7 @@ def salvar_profs_rp1(request):
             alertas[prof] = alerta_caso
             erros[prof] = erro_caso
 
+
     print(erros)
     print(alertas)
     return JsonResponse({'erros': erros, 'alertas': alertas})
