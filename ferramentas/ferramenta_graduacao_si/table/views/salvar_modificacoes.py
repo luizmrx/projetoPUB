@@ -271,7 +271,7 @@ def aula_manha_noite(data, alertas, ano):
                 if horario in valor:
                     horario_rp = chave
 
-            turma_rp1_prof = RP1Turma.objects.get(professor_si = professor)
+            turma_rp1_prof = RP1Turma.objects.get(professor_si = professor, ano=ano)
             try:
                 manha_noite_rp1 = DiaAulaRP1.objects.filter(turma_rp1=turma_rp1_prof, turma_rp1__ano=ano,
                                                             dia_semana = dia, horario = horario_rp)
@@ -334,7 +334,6 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
     else:
         semestres_testados = [1,3,5,7]
 
-
     professor = Professor.objects.get(Apelido = inf["professor"])
     dia_alerta_rp1 = False
     dia_alerta_tadi = False
@@ -386,8 +385,6 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
 
         except:
             pass
-
-
 
     if dia_alerta:
         dia = dia_alerta.first().get_DiaSemana_display().lower()
@@ -451,11 +448,6 @@ def aula_msm_horario(inf, ano, data, erros):
             aux = t
             break
 
-    # print(aux.CoDisc)
-    # print(aux.CodTurma)
-    # print(aux.CoDisc.SemestreIdeal)
-    # print(aux.semestre_extra)
-    # print(aux.Eextra)
     if conflito_hr:
         msg = (
             f"Conflito na {str(conflito_hr.first())}"
@@ -493,7 +485,7 @@ def aula_msm_horario(inf, ano, data, erros):
                 if inf["horario"] in valor:
                     horario = chave
 
-            turma_rp1_prof = RP1Turma.objects.get(professor_si = prof)
+            turma_rp1_prof = RP1Turma.objects.get(professor_si = prof, ano=ano)
             try:
                 conflito_hr_rp1 = DiaAulaRP1.objects.filter(turma_rp1=turma_rp1_prof, dia_semana = dia, horario = horario)
             except: pass
@@ -504,13 +496,66 @@ def aula_msm_horario(inf, ano, data, erros):
             erro_msm_hr(conflito_hr_rp1, erros, inf)
             return True
 
+        if inf["cod_disc"] != "ACH0021":
+            return conflito_hr_tadi(inf, prof, erros, ano)
+
+
+def conflito_hr_tadi(inf, prof, erros, ano):
+
+    conflito_hr_tadi = False
+
+    corresp_dias_semana = {
+        "Seg": 0,
+        "Ter": 2,
+        "Qua": 4,
+        "Qui": 6,
+        "Sex": 8
+    }
+
+    corresp_horarios = {
+        "8:00 - 09:45h": 0,
+        "10:15 - 12:00h": 1,
+        "14:00 - 15:45h": 2,
+        "16:15 - 18:00h": 4,
+        "19:00 - 20:45h": 5,
+        "21:00 - 22:45h": 7
+    }
+
+    for chave, valor in corresp_dias_semana.items():
+        if valor == inf["dia"]:
+            dia = chave
+
+    for chave, valor in corresp_horarios.items():
+        if inf["horario"] == valor:
+            horario = chave
+
+    try:
+        turma_tadi_prof = TadiTurma.objects.get(professor_si=prof, ano=ano)
+        try:
+            conflito_hr_tadi = DiaAulaTadi.objects.filter(turma_tadi=turma_tadi_prof, dia_semana=dia, horario=horario)
+        except:
+            pass
+    except:
+        pass
+
+    if conflito_hr_tadi:
+        msg = (
+            f"Professor(a) {inf['professor']} já possui"
+            f" a disciplina de TADI gravada nesse horário"
+        )
+        erros["prof_msm_hr"] = msg
+        return True
+
 
 def erro_msm_hr(dia_aula, erros, inf):
     msg = (
                 f"Professor(a) {inf['professor']} já possui"
                 f" a disciplina de RP1 gravada nesse horário"
             )
+
     erros["prof_msm_hr"] = msg
+
+
 
 
 def indice_tbl_update(turma_obj, ind_modif, info_par):

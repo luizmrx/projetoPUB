@@ -372,7 +372,6 @@ def save_modify(request):
 
     elif info_par["tipo"] == "i":
 
-
         aula_manha_noite(data, alertas, ano)
         aula_noite_outro_dia_manha(data, alertas, ano)
 
@@ -397,6 +396,8 @@ def save_modify(request):
             update_cod(data, ano, erros, data["semestre"], ind_modif)
 
     cod_mtr_sugestao = gera_sugestoes(ano, "sem_tds_profs")
+
+    print(erros)
 
     return JsonResponse({'erros': erros, 'alertas': alertas, 'cells_modif': ind_modif, 'cod_mtr_sugestao': cod_mtr_sugestao})
 
