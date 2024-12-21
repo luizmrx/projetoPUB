@@ -202,7 +202,9 @@ def save_prof_tadi(request):
     aula_manha_noite(data, alertas, ano)
     aula_noite_outro_dia_manha(data, alertas, ano)
 
-    if not aula_msm_horario(data["info"], ano, data, erros):
+    conf_tbl = conflito_hr_na_tbl_tadi(dia_aula_tadi, prof_bd, ano, erros)
+
+    if not conf_tbl and not aula_msm_horario(data["info"], ano, data, erros):
         try:
             tur.professor_si.add(prof_bd)
         except Exception as e:
@@ -214,3 +216,21 @@ def save_prof_tadi(request):
     print(alertas)
 
     return JsonResponse({'erros': erros, 'alertas': alertas, 'restricao_prof': prof_na_restricao(tur, restricoes)})
+
+def conflito_hr_na_tbl_tadi(dia_gravar, prof, ano, erros):
+
+    turmas = TadiTurma.objects.filter(professor_si=prof, ano=ano)
+
+    for turma in turmas:
+        dia_gravado_bd = DiaAulaTadi.objects.get(turma_tadi=turma)
+
+        if (dia_gravado_bd.dia_semana == dia_gravar.dia_semana and
+                dia_gravado_bd.horario == dia_gravar.horario):
+
+            msg = (
+                f"Professor(a) {prof.NomeProf} já possui"
+                f" uma turma de TADI gravada nesse horário nessa tabela"
+            )
+            erros["prof_msm_hr"] = msg
+            return True
+
