@@ -28,7 +28,7 @@ def planilha_si(sheet_si, smt, ano):
             CoDisc__SemestreIdeal__in=semestre_geral,
             Eextra="N",
         )
-        .exclude(CodTurma__in=(99,98,97))
+        .exclude(CodTurma__in=(99,98,97), CoDisc="ACH0042")
         .prefetch_related("dia_set", "CoDisc")
         .order_by("CoDisc__SemestreIdeal", "CoDisc__CoDisc", "CodTurma")
     )
