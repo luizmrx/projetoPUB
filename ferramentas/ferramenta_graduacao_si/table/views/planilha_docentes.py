@@ -15,7 +15,7 @@ from django.db.models import Prefetch, Count, Q, Max, Value
 from datetime import datetime
 from openpyxl.styles import PatternFill, Font
 
-
+#OBS: planilha de docentes = planilha docentes
 def planilha_docentes(sheet_doc):
     # carregando os dados na memória
     ano_funcionamento = Ano=AnoAberto.objects.get(id=1).Ano
@@ -330,7 +330,7 @@ def cria_atribuicao_com_pref_rp2():
 
     ano_atual = AnoAberto.objects.get(id=1).Ano
     rp2 = Disciplina.objects.get(CoDisc="ACH0042")
-    RP2TurmaPreview.objects.filter(codigo=99, ano=ano_atual).delete()
+    RP2TurmaPreview.objects.filter(codigo=99).delete()
     nova_turma = RP2TurmaPreview.objects.create(
         # Código arbitrário
         codigo=99,

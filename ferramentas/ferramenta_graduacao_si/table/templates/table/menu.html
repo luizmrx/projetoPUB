@@ -42,21 +42,17 @@
           <nav id="navbar-example3" class="h-100 flex-column align-items-stretch pe-4 border-end">
                 <nav class="nav nav-pills flex-column">
                     <h5 class="text-warning-emphasis ms-3 mt-2">Funcionalidades</h5>
-                    <a class="nav-link" href="#item-0">Atribuição automática</a> 
-                    <a class="nav-link" href="#item-1">Grade horária</a>
-                    <a class="nav-link" href="{% url 'ferramenta_graduacao_si:page_rp1' %}">Grade horária (RP1)</a>
-                    <!--<a class="nav-link" href="#item-8">Upload RP1</a>-->
-                    <a class="nav-link" href="{% url 'ferramenta_graduacao_si:page_tadi' %}">Grade horária (TADI)</a>
-                    <!--<a class="nav-link" href="#item-9">Upload TADI</a>-->
-                    <a class="nav-link" href="#item-3">Upload de Dados</a>
-                    <a class="nav-link" href="#item-4">Baixar Planilhas</a>
+                    <a class="nav-link controla-menu" href="#item-0">Atribuição automática</a> 
+                    <a class="nav-link controla-menu" href="#item-1">Grade horária</a>
+                    <a class="nav-link controla-menu" href="{% url 'ferramenta_graduacao_si:page_rp1' %}">Grade horária (RP1)</a>
+                    <a class="nav-link controla-menu" href="{% url 'ferramenta_graduacao_si:page_tadi' %}">Grade horária (TADI)</a>
+                    <a class="nav-link controla-menu" href="#item-3">Upload de Dados</a>
+                    <a class="nav-link controla-menu" href="#item-4">Baixar Planilhas</a>
                     <hr>
                     <h5 class="text-warning-emphasis ms-3 mt-2">Pendências {{anoAberto}}</h5>
+                    <a class="nav-link controla-menu" href="#item-5">Docentes com menos de 8 horas-aula</a>
 
-                    <a class="nav-link" href="#item-5">Docentes com menos de 8 horas-aula</a>
-                    <!--<a class="nav-link" href="#item-6">Docentes com menos de 8 horas-aula (Par)</a>-->
-
-                    <a class="nav-link" href="#item-7">Disciplinas obrigatórias sem horário alocado</a>
+                    <a class="nav-link controla-menu" href="#item-7">Disciplinas obrigatórias sem horário alocado</a>
                 </nav>
             </nav>
           </nav>
@@ -165,11 +161,12 @@
                 <div class="d-none" id="item-4">
                     <h5>Considerações</h5>
                     <ul>
+                        
                         <li>Três planilhas serão baixadas compactadas em um arquivo.zip</li>
                         <li>Uma é a de atribuição, nomeada como docentes.xlsx, e o restante de distribuição</li>
                         <li>Use a de docentes.xlsx depois de gerar a atribuição automática, modifique-a e suba novamente ao sistema </li>
-                        <li>Já a de destribuição estará preenchidas conforme as grades forem completadas</li>
-                        <li>Obs: o código da planilha de destribuição é antigo e pode necessitar de revisões</li>
+                        <li>Já a de destribuição estará preenchidas conforme as grades horárias forem completadas</li>
+                        <li>As turmas de RP1, TADI, RP2, e do CB NÃO ESTARÃO NA PLANILHA DE DISTRIBUIÇÃO</li>
                     </ul>
 
                     <div class="col-sm-8">
@@ -317,7 +314,7 @@
 <script>
     $(document).ready(function() {
        
-        $('.nav-link').click(function(e) {
+        $('.controla-menu').click(function(e) {
             const targetId = $(this).attr('href'); 
             $('#item-0, #item-1, #item-3, #item-4, #item-5, #item-7').addClass("d-none")
             $(targetId).removeClass('d-none')

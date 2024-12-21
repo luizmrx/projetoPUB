@@ -1,7 +1,7 @@
 from ..models import *
 from datetime import datetime
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
-
+from django.db.models import Q
 
 def planilha_extra(sheet, ano):
     # Filtra as turmas do semestre desejado, trazendo os dados necessários e ordenando-os.
@@ -28,6 +28,7 @@ def planilha_si(sheet_si, smt, ano):
             CoDisc__SemestreIdeal__in=semestre_geral,
             Eextra="N",
         )
+        .exclude(Q(CodTurma__in=(99,98,97)) | Q(CoDisc__CoDisc="ACH0042"))
         .prefetch_related("dia_set", "CoDisc")
         .order_by("CoDisc__SemestreIdeal", "CoDisc__CoDisc", "CodTurma")
     )
@@ -140,11 +141,13 @@ def set_col_a(sheet_si, disc, ini, end):
     # formata a coordenada da coluna A para o nome da matéria
     coord = "A" + str(ini)
     format_cell(sheet_si, coord)
+
     if ini < end:
         merge_coor = "A" + str(ini) + ":" + "A" + str(end - 1)
         sheet_si.merge_cells(merge_coor)
 
-    sheet_si[coord].value = disc.CoDisc + " - " + disc.NomeDisc
+    nome_disc = disc.CoDisc + " - " + disc.NomeDisc
+    sheet_si[coord].value = nome_disc
 
 
 def preenche_celulas(sheet_si, qtd_linhas, row, turma):
@@ -209,6 +212,7 @@ def escreve_excel(turmas_queryset, sheet_si, extra, row):
             row_ini = row
         elif prox_turma is None:
             set_col_a(sheet_si, disc, row_ini, row)
+
 
     # Define a área de impressão da tabela.
     if turmas_queryset:
