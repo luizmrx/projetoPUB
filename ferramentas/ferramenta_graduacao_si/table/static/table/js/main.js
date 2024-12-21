@@ -520,7 +520,7 @@ const editable = {
 
             const colCod = col % 2 !== 0;
             let validInput = false;
-            
+            //console.log("Teste");
             //Note que o valueUser nunca será "", se o usuário não escrever nada, o seu valor será <br>.
             if(valueUser==="<br>")valueUser="";
             if (colCod && valueUser !== "") {
@@ -535,6 +535,13 @@ const editable = {
                     erro_entrada(msg_erro, colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext)
                    
                 }else{
+                    
+                    console.log(valueUser);
+                    console.log(editable.previousValue);
+                    if(valueUser!==editable.previousValue && editable.previousValue!==""){
+                        //Caso de update
+                        //valueUser="";
+                    }
                     validInput = true;
                 }
 
@@ -634,6 +641,35 @@ const editable = {
                 save_edition.extrairDados(editable.selected, col, row, colCod, "d", vl);
             }
             
+        }else{
+            let vl = { "extra": false };
+            if(editable.is_ext) vl["extra"] = true;
+            let valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
+            const col = editable.colIndex;
+            const row = editable.rowIndex;
+            
+            
+            // tira ícones que podem estar nas células posterior e anterior
+            $(editable.selected).find("i").remove();
+
+            const nextCell = $(editable.selected).next();
+            const prevCell = $(editable.selected).prev();
+            const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
+            const valuePrevCell = prevCell.get(0) ? $(prevCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
+
+            const colCod = col % 2 !== 0;
+            if(valueUser==="<br>")valueUser="";
+            if(valueUser!==""){
+                celulaMarcada[0]=editable.selected;
+                celulaMarcada[1]=row;
+                celulaMarcada[2]=col;
+                vl["pf"] = valueNextCell;
+                vl["cod"] = editable.previousValue;
+                nextCell.html("");
+                //"d" == delete
+                save_edition.extrairDados(editable.selected, col, row, colCod, "d", vl);
+                
+            }
         }
     }
 };
