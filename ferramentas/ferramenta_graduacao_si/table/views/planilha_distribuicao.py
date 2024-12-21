@@ -1,7 +1,7 @@
 from ..models import *
 from datetime import datetime
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
-
+from django.db.models import Q
 
 def planilha_extra(sheet, ano):
     # Filtra as turmas do semestre desejado, trazendo os dados necessários e ordenando-os.
@@ -28,7 +28,7 @@ def planilha_si(sheet_si, smt, ano):
             CoDisc__SemestreIdeal__in=semestre_geral,
             Eextra="N",
         )
-        .exclude(CodTurma__in=(99,98,97), CoDisc="ACH0042")
+        .exclude(Q(CodTurma__in=(99,98,97)) | Q(CoDisc__CoDisc="ACH0042"))
         .prefetch_related("dia_set", "CoDisc")
         .order_by("CoDisc__SemestreIdeal", "CoDisc__CoDisc", "CodTurma")
     )
