@@ -48,6 +48,7 @@ def update_cod(data, year, erros, smt, ind_modif):
     update_prof(inf, year, data["semestre"])
     atualizar_dia(turma_obj, inf, year, erros, smt, ind_modif)
 
+
 def deletar_valor(data, year, erros):
     # Iterar sobre as turmas do banco de dados e excluir aquelas que não estão em tbl_user
     infos_user = data["info"]
