@@ -152,7 +152,7 @@ def criar_atribuicoes(request):
     ano_atual = int(AnoAberto.objects.get(id=1).Ano)
     Turma.objects.filter(CodTurma__in=(99, 98, 97), Ano=ano_atual).delete()
     TadiTurmaPreview.objects.all().delete()
-    RP1TurmaPreview.objects.filter(codigo=99).delete()
+    RP1TurmaPreview.objects.filter().delete()
     nova_turma = RP1TurmaPreview.objects.create(
         codigo=99,
         ano=ano_atual
@@ -330,7 +330,7 @@ def cria_atribuicao_com_pref_rp2():
 
     ano_atual = AnoAberto.objects.get(id=1).Ano
     rp2 = Disciplina.objects.get(CoDisc="ACH0042")
-    RP2TurmaPreview.objects.filter(codigo=99).delete()
+    RP2TurmaPreview.objects.filter().delete()
     nova_turma = RP2TurmaPreview.objects.create(
         # Código arbitrário
         codigo=99,
@@ -613,18 +613,28 @@ def carregar_atribuicao(request):
     ano_atual = AnoAberto.objects.get(id=1).Ano
     Turma.objects.filter(CodTurma__in=(99, 98, 97), Ano=ano_atual).delete()
     TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17))).delete()
-    RP1TurmaPreview.objects.filter(codigo=99, ano=ano_atual).delete()
-    RP2TurmaPreview.objects.filter(codigo=99, ano=ano_atual).delete()
+    RP1TurmaPreview.objects.all().delete()
+    RP2TurmaPreview.objects.all().delete()
 
     num_turma = 1
     nova_turma = RP1TurmaPreview.objects.create(
         codigo=99,
         ano=ano_atual
     )
+    nova_turma_2_prof = RP1TurmaPreview.objects.create(
+        codigo=98,
+        ano=ano_atual
+    )
 
     rp2_turma = RP2TurmaPreview.objects.create(
         # Código arbitrário
         codigo=99,
+        ano=ano_atual
+    )
+
+    rp2_turma_2_prof = RP2TurmaPreview.objects.create(
+        # Código arbitrário
+        codigo=98,
         ano=ano_atual
     )
 
@@ -649,13 +659,16 @@ def carregar_atribuicao(request):
                 codisc_db = Disciplina.objects.get(CoDisc=codisc)
 
             except ObjectDoesNotExist:
-                # print(f"disciplina {disciplina} não encontrada para o professor: {prof_obj.Apelido}")
+                print(f"disciplina {disciplina} não encontrada para o professor: {prof_obj.Apelido}")
                 continue
 
 
             #RP1
             if codisc == "ACH0041":
-                nova_turma.professor_si.add(prof_obj)
+                if prof_obj in nova_turma.professor_si.all():
+                    nova_turma_2_prof.professor_si.add(prof_obj)
+                else:
+                    nova_turma.professor_si.add(prof_obj)
 
             elif codisc == "ACH0021" and num_turma <= 17:
 
@@ -669,7 +682,10 @@ def carregar_atribuicao(request):
                 num_turma += 1
 
             elif codisc == "ACH0042":
-                rp2_turma.professor_si.add(prof_obj)
+                if prof_obj in rp2_turma.professor_si.all():
+                    rp2_turma_2_prof.professor_si.add(prof_obj)
+                else:
+                    rp2_turma.professor_si.add(prof_obj)
 
             elif not codisc in l_justificativa:
                 semestre = "P" if codisc_db.SemestreIdeal % 2 == 0 else "I"

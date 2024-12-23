@@ -63,7 +63,7 @@ def load_rp1(request):
 def page_rp1(request, text=""):
 
     rp1_turmas = RP1Turma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano)
-    profs_objs = RP1TurmaPreview.objects.all().first().professor_si.all()
+    profs_objs = RP1TurmaPreview.objects.filter(codigo=99).first().professor_si.all()
     rest_turno = {"manha": 0, "tarde": 22, "noite": 48}
     dia_sem = {"segunda": 0, "terca": 2, "quarta": 4, "quinta": 6, "sexta": 8}
     auto_profs = {}
@@ -110,11 +110,12 @@ def page_rp1(request, text=""):
     text = text.replace("[", "").replace("]", "").replace("'", "")
 
     print(restricoes_profs)
+    ano_aberto = AnoAberto.objects.get(id=1).Ano
     context = {
         "rp1": rp1_turmas,
-        "auto_profs": auto_profs,
+        "auto_profs": gera_sugestoes_rp1(ano_aberto),
         "text_erro": text,
-        "anoAberto": AnoAberto.objects.get(id=1).Ano,
+        "anoAberto": ano_aberto,
         "impedimentos_totais": impedimentos_totais,
         "rest_horarios": restricoes_profs
     }
@@ -244,7 +245,13 @@ def salvar_profs_rp1(request):
 
     print(erros)
     print(alertas)
-    return JsonResponse({'erros': erros, 'alertas': alertas,'restricao_prof':prof_na_restricao(tur, restricoes)})
+    resp = {'erros': erros,
+            'alertas': alertas,
+            'restricao_prof':prof_na_restricao(tur, restricoes),
+            'sugestoes': gera_sugestoes_rp1(ano)
+            }
+
+    return JsonResponse(resp)
 
 def conflito_hr_na_tbl_rp1(dia_gravar, prof, ano, erros):
 
@@ -304,3 +311,48 @@ def conflito_aula_manha_noite(dia_gravar, prof, ano, alertas):
                 )
             alertas["prof_msm_hr"] = msg
             return True
+
+def contar_professores(lista_professores):
+    contagem = {}
+
+    for professor in lista_professores:
+        if professor in contagem:
+            contagem[professor] += 1
+        else:
+            contagem[professor] = 1
+
+    return contagem
+
+
+def gera_sugestoes_rp1(ano):
+    #código adaptado da função remove_rp do planilhas_docentes.py
+    rps = RP1Turma.objects.filter(ano=ano)
+    rp_preview = RP1TurmaPreview.objects.all()
+    profs_objs = RP1TurmaPreview.objects.filter(codigo=99).first().professor_si.all()
+    auto_profs = {}
+
+
+    for prof_obj in profs_objs:
+        auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
+
+    lista_prof_preview = []
+
+    for turma in rp_preview:
+        profs = turma.professor_si.all()
+        for prof in profs:
+            lista_prof_preview.append(prof)
+
+
+    dict_prof_preview = contar_professores(lista_prof_preview)
+
+    for tur in rps:
+        profs = tur.professor_si.all()
+        for prof in profs:
+            if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
+                del auto_profs[prof.NomeProf]
+
+            elif prof in dict_prof_preview:
+                dict_prof_preview[prof] -= 1
+
+    return auto_profs
+

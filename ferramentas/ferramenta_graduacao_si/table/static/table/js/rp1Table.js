@@ -1,5 +1,5 @@
 
-const auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
+let auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
 
@@ -128,6 +128,7 @@ $(document).ready(function() {
                 success: (data) => {
                     const erros = data["erros"];
                     const alertas = data["alertas"];
+<<<<<<< HEAD
                     
                     const restricao_prof = data["restricao_prof"]
                     
@@ -140,6 +141,15 @@ $(document).ready(function() {
                         let indice = prof_permitidos.indexOf(erros["nome_prof"])
                         if(indice !== -1){
                             prof_permitidos[indice]="";
+=======
+                    auto_profs = data["sugestoes"]
+
+                    const mostrarAlerta = (tipo, mensagem, callback) => {
+                        if (tipo === "ERRO") {
+                            openModal("ERRO", mensagem);
+                        } else {
+                            openModal("Warning(s)", mensagem);
+>>>>>>> ca669949 (bugfix: rp1 não gravava duas turmas no upload de docentes.xlsx, feat: rp1 limita os professores na sugestão)
                         }
                         console.log("Caso de teste");
                         console.log(prof_permitidos);

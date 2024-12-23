@@ -234,3 +234,34 @@ def conflito_hr_na_tbl_tadi(dia_gravar, prof, ano, erros):
             erros["prof_msm_hr"] = msg
             return True
 
+def gera_sugestoes_tadi(ano):
+    #código adaptado da função remove_rp do planilhas_docentes.py
+    rps = RP1Turma.objects.filter(ano=ano)
+    rp_preview = RP1TurmaPreview.objects.all()
+    profs_objs = RP1TurmaPreview.objects.filter(codigo=99).first().professor_si.all()
+    auto_profs = {}
+
+
+    for prof_obj in profs_objs:
+        auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
+
+    lista_prof_preview = []
+
+    for turma in rp_preview:
+        profs = turma.professor_si.all()
+        for prof in profs:
+            lista_prof_preview.append(prof)
+
+
+    dict_prof_preview = contar_professores(lista_prof_preview)
+
+    for tur in rps:
+        profs = tur.professor_si.all()
+        for prof in profs:
+            if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
+                del auto_profs[prof.NomeProf]
+
+            elif prof in dict_prof_preview:
+                dict_prof_preview[prof] -= 1
+
+    return auto_profs
