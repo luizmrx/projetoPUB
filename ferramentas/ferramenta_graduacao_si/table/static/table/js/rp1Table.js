@@ -10,7 +10,7 @@ function openModal(title, messages) {
     const myModal = new bootstrap.Modal(document.getElementById("myModal"));
     myModal.show();
 }
-
+ 
 $(function() {
     coresRestrições();
 })
@@ -108,12 +108,14 @@ $(document).ready(function() {
             }               
         }
 
+        let prof_hr_err = false;
         if(validInput){
             const myEvent = { 
                 id: $(cell).prev().text(),
                 lProfs: lProfs,
                 csrfmiddlewaretoken: window.CSRF_TOKEN
             };
+            let prof_permitidos = lProfs;
             $.ajax({
                 url: $("#url-data").data("url"),
                 type: "POST",
@@ -126,87 +128,51 @@ $(document).ready(function() {
                 success: (data) => {
                     const erros = data["erros"];
                     const alertas = data["alertas"];
-
-                    const mostrarAlerta = (tipo, mensagem, callback) => {
-                        if (tipo === "ERRO") {
-                            openModal("ERRO", mensagem);
-                        } else {
-                            openModal("Warning(s)", mensagem);
+                    
+                    const restricao_prof = data["restricao_prof"]
+                    
+                    if(erros && erros.hasOwnProperty("prof_msm_hr")){
+                        prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
+                    } 
+                    
+                    if(prof_hr_err){
+                        openModal("ERRO", erros["prof_msm_hr"]);
+                        let indice = prof_permitidos.indexOf(erros["nome_prof"])
+                        if(indice !== -1){
+                            prof_permitidos[indice]="";
                         }
-                        $('#myModal').on('hidden.bs.modal', () => {
-                            callback();
-                        });
-                    };
+                        console.log("Caso de teste");
+                        console.log(prof_permitidos);
+                    }else{
+                        cell.html(resp);
+                    }
+                    
+                    if(alertas && Object.keys(alertas).length !== 0){
 
-                    const mostrarProximoErro = () => {
-                        const keysErro = Object.keys(erros);
-        
-                        if (keysErro.length > 0) {
-                            const prof = keysErro[0];
-                            const erro_prof = erros[prof];
-                            const keysErroProf = Object.keys(erro_prof);
-                            if (keysErroProf.length > 0) {
-                                const erro = keysErroProf[0];
-                                const mensagem = erro_prof[erro];
-                                delete erro_prof[erro];
-                                if (Object.keys(erro_prof).length === 0) {
-                                    delete erros[prof];
-                                }
-                                mostrarAlerta("ERRO", mensagem, mostrarProximoErro);
-                                return; // Saia da função após mostrar o erro
-                            } 
-                            
-                            delete erros[keysErro[0]];
-                            mostrarProximoErro();
-                        }
-                        else {
-                            mostrarProximoAlerta()
-                        }
-                    };   
+                        openModal("Warning(s)", alertas["prof_msm_hr"]);
 
-                    const mostrarProximoAlerta = () => {
-                        const keysAlerta = Object.keys(alertas);
-                        if (keysAlerta.length > 0) {
-                            const prof = keysAlerta[0];
-                            const alerta_prof = alertas[prof];
-                            const keysAlertaProf = Object.keys(alerta_prof);
-                            if (keysAlertaProf.length > 0) {
-                                const alerta = keysAlertaProf[0];
-                                const mensagem = alerta_prof[alerta];
-                                delete alerta_prof[alerta];
-                                if (Object.keys(alerta_prof).length === 0) {
-                                    delete alertas[prof];
-                                }
-                                mostrarAlerta("ALERTA", mensagem, mostrarProximoAlerta);
-                                return; // Saia da função após mostrar o alerta
-                            }
-                            delete alertas[keysAlerta[0]];
-                            mostrarProximoAlerta();
-                        }
-                        else {
-                            location.reload(true);
-                        }
-                    };
+                    }
 
-                    mostrarProximoErro(); // Inicia exibindo os erros
-
-                         
+                    const row = cell.closest('tr');
+                    row.find('.n_completo').remove();
+                    console.log("Verifacaao")
+                    console.log(prof_permitidos);
+                    prof_permitidos.forEach(nome => {
+                        row.append('<td class="d-none n_completo">'+nome+'</td>')
+                    });
+                    $(cell).removeClass("prof-na-restricão");
+                    $(cell).removeClass("prof-no-impedimento");
+                    $("#popup").hide();
+                    cell.html(resp.join(","));
+                    coresRestrições();
                 },
+
                 error: (error) => {
                     alert("Ocorreu um erro ao manipular as informações");
                 }
             });
 
-            const row = cell.closest('tr');
-            row.find('.n_completo').remove();
-            lProfs.forEach(nome => {
-                row.append('<td class="d-none n_completo">'+nome+'</td>')
-            });
-            $(cell).removeClass("prof-na-restricão");
-            $(cell).removeClass("prof-no-impedimento");
-            $("#popup").hide();
-            cell.html(resp.join(","));
-            coresRestrições()
+            
         }
     }
 });

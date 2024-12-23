@@ -660,6 +660,7 @@ const editable = {
             const colCod = col % 2 !== 0;
             if(valueUser==="<br>")valueUser="";
             if(valueUser!==""){
+                let celulaMarcada=[];
                 celulaMarcada[0]=editable.selected;
                 celulaMarcada[1]=row;
                 celulaMarcada[2]=col;
@@ -667,7 +668,7 @@ const editable = {
                 vl["cod"] = editable.previousValue;
                 nextCell.html("");
                 //"d" == delete
-                save_edition.extrairDados(editable.selected, col, row, colCod, "d", vl);
+                save_edition.extrairDados(celulaMarcada[0], celulaMarcada[1], celulaMarcada[2], colCod, "d", vl);
                 
             }
         }

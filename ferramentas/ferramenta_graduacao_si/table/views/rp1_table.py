@@ -120,6 +120,40 @@ def page_rp1(request, text=""):
     }
     return render(request, "table/rp1Table.html", context)
 
+def prof_na_restricao(tur, restricoes):
+    impedimento = False
+    nao_gostaria = False
+
+    dia_aula_rp1 = DiaAulaRP1.objects.get(turma_rp1=tur)
+
+    # dicionário de correspondencia dos dias da semana
+    corresp_dias_semana_restricao = {
+        "Seg": "segunda",
+        "Ter": "terca",
+        "Qua": "quarta",
+        "Qui": "quinta",
+        "Sex": "sexta"
+    }
+    # dicionário de correspondencia de horário para período
+    corresp_horarios_restricao = {
+        "08h - 12h": "manha",
+        "14h - 18h": "tarde",
+        "19h - 22h45": "noite"
+    }
+
+    for restricao in restricoes:
+        if (restricao.dia == corresp_dias_semana_restricao[dia_aula_rp1.dia_semana] and restricao.periodo == corresp_horarios_restricao[dia_aula_rp1.horario]):
+
+            if restricao.impedimento:
+                impedimento = True
+
+            nao_gostaria = True
+
+
+    return {
+        'impedimento': impedimento,
+        'prof_nao_gosta_hr': nao_gostaria
+    }
 
 @login_required
 def salvar_profs_rp1(request):
@@ -132,16 +166,21 @@ def salvar_profs_rp1(request):
     data = json.load(request)
     erros = {}
     alertas = {}
-    ind_modif = []
     ano = AnoAberto.objects.get(id=1).Ano
     tur = RP1Turma.objects.get(id=data["id"])
     tur.professor_si.clear()
+
+    print("Verificando lista")
+    print(data["lProfs"])
+    if data["lProfs"] == ['', '', '']:
+        return JsonResponse({'status': 'String vazia'})
+    
     for prof in data["lProfs"]:
         erro_caso = {}
         alerta_caso = {}
         if not prof:
             continue
-        dia_aula_rp1 = DiaAulaRP1.objects.get(turma_rp1 = tur)
+
         # devemos adaptaros horarios e dias para serem compatíveis com as restrições
         # dicionário de correspondencia dos dias da semana
         corresp_dias_semana = {
@@ -151,16 +190,21 @@ def salvar_profs_rp1(request):
             "Qui": 6,
             "Sex": 8
         }
+
         # dicionário de correspondencia de horário
         corresp_horarios = {
             "08h - 12h": [0,1],
             "14h - 18h": [2,4],
             "19h - 22h45": [5,7]
-        }        
+        } 
+        
+        dia_aula_rp1 = DiaAulaRP1.objects.get(turma_rp1 = tur)          
         prof_bd = Professor.objects.get(NomeProf=prof)
-        print(corresp_horarios[dia_aula_rp1.horario])
-        for horario in corresp_horarios[dia_aula_rp1.horario]:
 
+        print(corresp_horarios[dia_aula_rp1.horario])
+
+        for horario in corresp_horarios[dia_aula_rp1.horario]:
+            print(horario)
             data = {
                 "info": {
                     'cod_disc': 'ACH0041',
@@ -172,25 +216,91 @@ def salvar_profs_rp1(request):
                 },
                 "semestre": 1
             }
-            aula_manha_noite(data, alerta_caso, ano)
-            aula_noite_outro_dia_manha(data, alerta_caso, ano)
+            print("Verificando")
+
+            # aula_manha_noite(data, alertas, ano)
+            # aula_noite_outro_dia_manha(data, alertas, ano)
+            conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas)
+            
             print("Atenção aqui")
-            print(aula_msm_horario(data["info"], ano, data, erro_caso))
+            print(conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas))
+            print(aula_msm_horario(data["info"], ano, data, erros))
             print("do professor " + data["info"]["professor"])
-            if not aula_msm_horario(data["info"], ano, data, erro_caso):
+            if horario in (0, 2, 5): conf_tbl = conflito_hr_na_tbl_rp1(dia_aula_rp1, prof_bd, ano, erros)
+            if not conf_tbl and not aula_msm_horario(data["info"], ano, data, erros):
                 try:
                     tur.professor_si.add(prof_bd)
                 except Exception as e:
                     print("erroooo")
-            else: 
-                alertas[prof] = alerta_caso
-                erros[prof] = erro_caso
-                break
-            
-            alertas[prof] = alerta_caso
-            erros[prof] = erro_caso
+            else:
+                erros["nome_prof"] = prof_bd.NomeProf
+                print(erros["nome_prof"])
+                
+            print("Verificando professores")
+            print(tur.professor_si)
+
+            restricoes = prof_bd.restricao_set.all()
 
 
     print(erros)
     print(alertas)
-    return JsonResponse({'erros': erros, 'alertas': alertas})
+    return JsonResponse({'erros': erros, 'alertas': alertas,'restricao_prof':prof_na_restricao(tur, restricoes)})
+
+def conflito_hr_na_tbl_rp1(dia_gravar, prof, ano, erros):
+
+    turmas = RP1Turma.objects.filter(professor_si=prof, ano=ano)
+
+    for turma in turmas:
+
+        dia_gravado_bd = DiaAulaRP1.objects.get(turma_rp1=turma)
+        print(dia_gravado_bd.horario)
+
+        if(dia_gravado_bd.dia_semana == dia_gravar.dia_semana and dia_gravado_bd.horario == dia_gravar.horario):
+
+            msg=(
+                f"Professor(a) {prof.NomeProf} já possui"
+                f" uma turma de RP1 gravado nesse horário nessa tabela"
+            )
+            erros["prof_msm_hr"] = msg
+            return True
+        
+
+def conflito_aula_manha_noite(dia_gravar, prof, ano, alertas):
+
+    turmas = RP1Turma.objects.filter(professor_si=prof, ano=ano)
+
+    for turma in turmas:
+
+        dia_gravado_bd = DiaAulaRP1.objects.get(turma_rp1=turma)
+
+        print("ultima funcao")
+        print(dia_gravado_bd.dia_semana)
+        print(dia_gravado_bd.horario)
+        print(dia_gravar.dia_semana)
+        print(dia_gravar.horario)
+
+        condicoes = {
+            ("Seg", "19h - 22h45", "Ter", "08h - 12h"): True,
+            ("Ter", "19h - 22h45", "Qua", "08h - 12h"): True,
+            ("Qua", "19h - 22h45", "Qui", "08h - 12h"): True,
+            ("Qui", "19h - 22h45", "Sex", "08h - 12h"): True,
+
+            ("Ter", "08h - 12h", "Seg", "19h - 22h45"): True,
+            ("Qua", "08h - 12h", "Ter", "19h - 22h45"): True,
+            ("Qui", "08h - 12h", "Qua", "19h - 22h45"): True,
+            ("Sex", "08h - 12h", "Qui", "19h - 22h45"): True,
+        }
+
+        if (dia_gravado_bd.dia_semana, dia_gravado_bd.horario, dia_gravar.dia_semana, dia_gravar.horario) in condicoes:
+            if(dia_gravado_bd.horario=="19h - 22h45"):
+                msg=(
+                    f"Professor(a) {prof.NomeProf} está dando"
+                    f" aula de noite na {dia_gravado_bd.dia_semana} e de manhã na {dia_gravar.dia_semana}"
+                )
+            else:
+                msg=(
+                    f"Professor(a) {prof.NomeProf} está dando"
+                    f" aula de noite na {dia_gravar.dia_semana} e de manhã na {dia_gravado_bd.dia_semana}"
+                )
+            alertas["prof_msm_hr"] = msg
+            return True
