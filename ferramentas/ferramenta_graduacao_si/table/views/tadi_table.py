@@ -50,12 +50,12 @@ def page_tadi(request, text=""):
             profs_impedimento.append(prof_bd.Apelido)
 
     print(profs_nao_gosta)
-
+    ano_aberto = AnoAberto.objects.get(id=1).Ano
     context = {
         "rp1": tadi_turmas,
-        "auto_profs": auto_profs,
+        "auto_profs": gera_sugestoes_tadi(ano_aberto),
         "text_erro": text,
-        "anoAberto": AnoAberto.objects.get(id=1).Ano,
+        "anoAberto": ano_aberto,
         "profs_impedimento": profs_impedimento,
         "profs_nao_gosta": profs_nao_gosta
     }
@@ -165,7 +165,9 @@ def save_prof_tadi(request):
     tur.professor_si.clear()
 
     if data["lProfs"] == ['']:
-        return JsonResponse({'status': 'String vazia'})
+        return JsonResponse({'status': 'String vazia',
+                             'sugestoes': gera_sugestoes_tadi(ano),
+                             })
 
     corresp_dias_semana = {
         "Seg": 0,
@@ -214,8 +216,14 @@ def save_prof_tadi(request):
     restricoes = prof_bd.restricao_set.all()
     print(erros)
     print(alertas)
+    resp = {
+        'erros': erros,
+        'alertas': alertas,
+        'restricao_prof': prof_na_restricao(tur, restricoes),
+        'sugestoes': gera_sugestoes_tadi(ano)
+    }
 
-    return JsonResponse({'erros': erros, 'alertas': alertas, 'restricao_prof': prof_na_restricao(tur, restricoes)})
+    return JsonResponse(resp)
 
 def conflito_hr_na_tbl_tadi(dia_gravar, prof, ano, erros):
 
@@ -236,32 +244,30 @@ def conflito_hr_na_tbl_tadi(dia_gravar, prof, ano, erros):
 
 def gera_sugestoes_tadi(ano):
     #código adaptado da função remove_rp do planilhas_docentes.py
-    rps = RP1Turma.objects.filter(ano=ano)
-    rp_preview = RP1TurmaPreview.objects.all()
-    profs_objs = RP1TurmaPreview.objects.filter(codigo=99).first().professor_si.all()
+
+    tadis = TadiTurma.objects.filter(ano=ano)
+    turmas_tadi = TadiTurmaPreview.objects.all()
     auto_profs = {}
-
-
-    for prof_obj in profs_objs:
-        auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
-
     lista_prof_preview = []
 
-    for turma in rp_preview:
-        profs = turma.professor_si.all()
-        for prof in profs:
-            lista_prof_preview.append(prof)
-
+    for turma in turmas_tadi:
+        # considerando que só haja uma professor por turma
+        prof_obj = turma.professor_si.all().first()
+        auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
+        lista_prof_preview.append(prof_obj)
 
     dict_prof_preview = contar_professores(lista_prof_preview)
 
-    for tur in rps:
+    for tur in tadis:
         profs = tur.professor_si.all()
         for prof in profs:
+
+            if prof in dict_prof_preview:
+                dict_prof_preview[prof] -= 1
+
             if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
                 del auto_profs[prof.NomeProf]
 
-            elif prof in dict_prof_preview:
-                dict_prof_preview[prof] -= 1
+
 
     return auto_profs

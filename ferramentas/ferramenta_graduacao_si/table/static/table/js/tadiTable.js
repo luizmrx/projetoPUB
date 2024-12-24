@@ -1,5 +1,5 @@
 // código daptado de rp1Table.js
-const auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
+let auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
 const profs_impedimento = JSON.parse(document.getElementById("profs_impedimento").textContent);
 const profs_nao_gosta = JSON.parse(document.getElementById("profs_nao_gosta").textContent);
 
@@ -124,6 +124,7 @@ $(document).ready(function() {
                     const erros = data["erros"]
                     const alertas = data["alertas"]
                     const restricao_prof = data["restricao_prof"]
+                    auto_profs = data["sugestoes"]
                     // const cred_err = erros.hasOwnProperty("credito")
                     if(erros && erros.hasOwnProperty("prof_msm_hr")){
                         prof_hr_err = erros.hasOwnProperty("prof_msm_hr")

@@ -173,8 +173,9 @@ def salvar_profs_rp1(request):
 
     print("Verificando lista")
     print(data["lProfs"])
+
     if data["lProfs"] == ['', '', '']:
-        return JsonResponse({'status': 'String vazia'})
+        return JsonResponse({'status': 'String vazia', 'sugestoes': gera_sugestoes_rp1(ano)})
     
     for prof in data["lProfs"]:
         erro_caso = {}
@@ -247,7 +248,7 @@ def salvar_profs_rp1(request):
     print(alertas)
     resp = {'erros': erros,
             'alertas': alertas,
-            'restricao_prof':prof_na_restricao(tur, restricoes),
+            # 'restricao_prof':prof_na_restricao(tur, restricoes),
             'sugestoes': gera_sugestoes_rp1(ano)
             }
 
@@ -342,17 +343,18 @@ def gera_sugestoes_rp1(ano):
         for prof in profs:
             lista_prof_preview.append(prof)
 
-
     dict_prof_preview = contar_professores(lista_prof_preview)
+
 
     for tur in rps:
         profs = tur.professor_si.all()
         for prof in profs:
+            if prof in dict_prof_preview:
+                dict_prof_preview[prof] -= 1
+
             if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
                 del auto_profs[prof.NomeProf]
 
-            elif prof in dict_prof_preview:
-                dict_prof_preview[prof] -= 1
 
     return auto_profs
 
