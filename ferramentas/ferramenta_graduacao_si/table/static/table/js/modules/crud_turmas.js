@@ -59,7 +59,8 @@ const save_edition = {
                     "cod_turma": lastCellContent,
                     "tipo": type,
                     "posicao": indice,
-                    "extra": vl["extra"]
+                    "extra": vl["extra"],
+                    "mtr_ant": vl["mtr_ant"],
                 }
                 console.log(type)
                 if(type === "u") {
@@ -78,12 +79,15 @@ const save_edition = {
                 "dia": dia,
                 "cod_turma": lastCellContent,
                 "tipo": type,
-                "extra": vl["extra"]
+                "extra": vl["extra"],
+                "mtr_ant": vl["mtr_ant"],
             }
             
             if(type === "u") infosParCell = $.extend(infosParCell, vl);
-            console.log("Aqui está o infosParCell") 
-            console.log(infosParCell)
+            console.log("Aqui está o infosParCell");
+            console.log(infosParCell);
+            // console.log(vl["mtr_ant"]);
+            // console.log(vUserProf);
             save_edition.requisicao(infosParCell, cell, row, col);
         }
         
@@ -91,7 +95,8 @@ const save_edition = {
         
     },
     requisicao: (content, cell_cod, row, col) => {
-        console.log(content)
+        // console.log("Requisicao:")
+        // console.log(content)
         const myEvent = { 
             info: content,
             semestre: semestre,
@@ -171,7 +176,7 @@ const save_edition = {
                     openModal("Warning(s)", alerta_msg);
                 } else {
                     location.reload(true)
-                }
+                } 
             },
             error: (error) => {
                 alert("Ocorreu um erro ao manipular as informações");

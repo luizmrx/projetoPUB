@@ -11,15 +11,40 @@ def update_prof(inf, year, smt):
         extra = "S"
 
     try:
-        
-        turma_db = Turma.objects.get(Ano=year, CoDisc=str(inf["cod_disc"]),
-                                        CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano, Eextra=extra, 
-                                        NroUSP=Professor.objects.get(Apelido=inf["ant_prof"]))
+        # print("inicio do try")
+        # print("----")
+        #O problema está no cod_disc que está passando o valor do atual campo e não do valor anterior
+        #Houve um grande problema para conseguir consertar o update pois o sistema não conseguia encontrar um turma já que o CodTurma passado era o atual e não o anterior. Descomente os print para facilitar a vizualização do fluxo de informação em caso de algum problema. Também é muito útil verificar as alterações (inssert, update, delete) pelo admin na página das turmas.
+        # print(inf)
+        # print(year)
+        # print(str(inf["cod_disc"]))
+        # print(str(inf["cod_turma"]))
+        # print(smt_ano)
+        # print(extra)
+        # print(inf["ant_prof"])
+        # print(Professor.objects.get(Apelido=inf["ant_prof"]))
+        # print(inf["mtr_ant"])
+
+
+        materia_anterior = inf["mtr_ant"].split()
+
+        # print(materia_anterior[0])
+        # print("-------")
+
+        turma_db = Turma.objects.get(Ano=year, CodTurma=str(inf["cod_turma"]), SemestreAno=smt_ano, Eextra=extra,NroUSP=Professor.objects.get(Apelido=inf["ant_prof"]), CoDisc=str(materia_anterior[0]),)
+
+        # print(turma_db)
+        # print("+++++")
+
         prof = Professor.objects.get(Apelido=inf["professor"])
+        disc = Disciplina.objects.get(CoDisc=str(inf["cod_disc"]))
         turma_db.NroUSP = prof
+        turma_db.CodTurma = str(inf["cod_turma"])
+        turma_db.CoDisc = disc
         turma_db.save()
         return turma_db
     except:
+    #     print("except do update_prof")
         pass
 
 

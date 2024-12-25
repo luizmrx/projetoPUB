@@ -357,7 +357,8 @@ def save_modify(request):
 
     data = json.load(request)
     info_par = data["info"]
-
+    # print("+++++++++")
+    # print(info_par)
     ano = AnoAberto.objects.get(id=1).Ano
 
     erros = {}
@@ -388,7 +389,7 @@ def save_modify(request):
             aula_noite_outro_dia_manha(data, alertas, ano)
 
             if not aula_msm_horario(info_par, ano, data, erros):
-               
+                    
                     turma_obj = update_prof(info_par, ano, data["semestre"])
                     indice_tbl_update(turma_obj, ind_modif, info_par)
 
@@ -398,7 +399,7 @@ def save_modify(request):
     cod_mtr_sugestao = gera_sugestoes(ano, "sem_tds_profs")
 
     print(erros)
-
+    
     return JsonResponse({'erros': erros, 'alertas': alertas, 'cells_modif': ind_modif, 'cod_mtr_sugestao': cod_mtr_sugestao})
 
 @login_required

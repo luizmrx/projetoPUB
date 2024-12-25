@@ -28,6 +28,9 @@ export {cods_auto_ext, cods_auto_obrig, semestre, openModal, editable, coresRest
 //lista de disciplinas do CB que não podem ser editadas
 const listaCB = ["ACH0021 TADI", "ACH0141 SMD", "ACH0041 RP1"]
 
+//Armazena o código da matéria no caso de update
+let valor_materia;
+
 //exibe a caixa de mensagens para alertas
 function openModal(title, messages) {
     const modalBody = document.getElementById("modalBody");
@@ -508,14 +511,14 @@ const editable = {
             let valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
             const col = editable.colIndex;
             const row = editable.rowIndex;
-            
+            let caso_update = false;
             
             // tira ícones que podem estar nas células posterior e anterior
             $(editable.selected).find("i").remove();
 
-            const nextCell = $(editable.selected).next();
+            let nextCell = $(editable.selected).next();
             const prevCell = $(editable.selected).prev();
-            const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
+            let valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
             const valuePrevCell = prevCell.get(0) ? $(prevCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
 
             const colCod = col % 2 !== 0;
@@ -526,7 +529,6 @@ const editable = {
             if (colCod && valueUser !== "") {
                 let ExistMtr = false;
                 if (cods_auto_obrig.hasOwnProperty(valueUser)) ExistMtr = true;
-
                 const mtr_ext_valida = cods_auto_ext.hasOwnProperty(valueUser)
                 if((row >= 4 && row <= 6 && mtr_ext_valida) | (mtr_ext_valida && editable.is_ext))  ExistMtr = true; 
                 
@@ -541,6 +543,10 @@ const editable = {
                     if(valueUser!==editable.previousValue && editable.previousValue!==""){
                         //Caso de update
                         //valueUser="";
+                        //valueNextCell="";
+                        console.log("Caso de update");
+                        caso_update=true;
+                        //nextCell.html("");
                     }
                     validInput = true;
                 }
@@ -592,7 +598,20 @@ const editable = {
 
             //Exceção das duas células da segunda linha do vespertino 1
             //A próxima coluna e a anterior podem ser indefinidas
-            const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
+            // const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
+            let parIncompletoDireita=false;
+            let vl = { "extra": false };
+            
+            if((validInput && colCod &&  valueNextCell === "")||caso_update){
+                //Precisamos armazenar a materia anterior da atual em caso de update
+                vl["mtr_ant"]=editable.previousValue;
+                valor_materia=vl["mtr_ant"];
+                // console.log("Testando vl");
+                // console.log(vl["mtr_ant"]);
+                parIncompletoDireita= true;
+            } 
+
+           
             const parIncompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
 
             // (C4) Se a célula ao lado estiver vazia ela fica editável
@@ -602,13 +621,21 @@ const editable = {
 
             //(C5) Se o par de células estiver completo chama o save_edition
             
-            let vl = { "extra": false };
+            
             if(editable.is_ext) vl["extra"] = true;
             if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
             || (!colCod && !parIncompletoEsquerda && valueUser !== ""))){
                 //"i/u" == insert/update
+                console.log(editable.previousValue);
                 if(editable.previousValue !== ""){
+                   
+
                     //update
+
+                    
+                    vl["mtr_ant"]=valor_materia;
+                    console.log("update ver");
+                    console.log(vl["mtr_ant"]);
                     if(colCod) vl["ant_cod"] = editable.previousValue;
                     else {
                         vl["ant_prof"] = editable.previousValue;
@@ -617,7 +644,7 @@ const editable = {
                     
                     
                 }else{
-                    
+                    console.log("insert ver");
                     //insert
                     save_edition.extrairDados(editable.selected, col, row, colCod, "i", vl);
     
@@ -641,36 +668,6 @@ const editable = {
                 save_edition.extrairDados(editable.selected, col, row, colCod, "d", vl);
             }
             
-        }else{
-            let vl = { "extra": false };
-            if(editable.is_ext) vl["extra"] = true;
-            let valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
-            const col = editable.colIndex;
-            const row = editable.rowIndex;
-            
-            
-            // tira ícones que podem estar nas células posterior e anterior
-            $(editable.selected).find("i").remove();
-
-            const nextCell = $(editable.selected).next();
-            const prevCell = $(editable.selected).prev();
-            const valueNextCell = nextCell.get(0) ? $(nextCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
-            const valuePrevCell = prevCell.get(0) ? $(prevCell).html().replace(/&nbsp;/g, '').trim() : "indefinido";
-
-            const colCod = col % 2 !== 0;
-            if(valueUser==="<br>")valueUser="";
-            if(valueUser!==""){
-                let celulaMarcada=[];
-                celulaMarcada[0]=editable.selected;
-                celulaMarcada[1]=row;
-                celulaMarcada[2]=col;
-                vl["pf"] = valueNextCell;
-                vl["cod"] = editable.previousValue;
-                nextCell.html("");
-                //"d" == delete
-                save_edition.extrairDados(celulaMarcada[0], celulaMarcada[1], celulaMarcada[2], colCod, "d", vl);
-                
-            }
         }
     }
 };
