@@ -160,6 +160,7 @@ $(document).ready(function() {
                     console.log(prof_permitidos);
                     prof_permitidos.forEach(nome => {
                         row.append('<td class="d-none n_completo">'+nome+'</td>')
+                        console.log(nome);
                     });
                     $(cell).removeClass("prof-na-restricão");
                     $(cell).removeClass("prof-no-impedimento");

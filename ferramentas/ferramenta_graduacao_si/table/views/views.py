@@ -380,7 +380,13 @@ def save_modify(request):
         
             turma_obj = cadastrar_turma(info_par, ano, data["semestre"])
             update_prof(info_par, ano, data["semestre"])
-            atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif)
+            if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif):
+                try:
+                    print("Deletando turma cadastrada")
+                    turma_obj.delete()
+                    print("Funcionou")
+                except:
+                    pass
 
     elif info_par["tipo"] == "u":
 

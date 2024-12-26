@@ -237,9 +237,26 @@ def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif):
         dia.first().Turmas.add(turma_db)
     else:
         cadastrar_dia(turma_db, turma)
+    return True
     
 
 def extrapola_creditos(turma_db):
+    #Note que toda vez que iniciamos uma disciplina, também iniciamos uma turma. Porém, podemos ter a mesma disciplina diversas vezes ao longo da semana e o sistema não perceberá o erro. Para arrumar esse erro, verificamos se existe mais de uma turma no sistema. Em caso positivo, o get irá gerar um erro e o extrapola_creditos retornará True
+
+    Ano = turma_db.Ano
+    CoDisc = turma_db.CoDisc
+    CodTurma = turma_db.CodTurma
+    SemestreAno = turma_db.SemestreAno
+    Eextra = turma_db.Eextra
+
+    try:
+        total_turmas = Turma.objects.get(Ano = Ano, CoDisc = CoDisc, CodTurma = CodTurma, SemestreAno = SemestreAno, Eextra = Eextra)
+        print("Verificando todas as turmas")
+        print(total_turmas)
+    except:
+        return True
+
+
     creditos_disc = turma_db.CoDisc.CreditosAula
     num_hrs = turma_db.dia_set.all().count()
    
