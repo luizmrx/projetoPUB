@@ -405,16 +405,16 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
         try:
             # adaptações necessárias para conferência do caso de rp1
             corresp_horarios = {
-                    "08h - 12h": [0,1],
-                    "14h - 18h": [2,4],
-                    "19h - 22h45": [5,7]
-                }
+                "08h - 12h": [0,1],
+                "14h - 18h": [2,4],
+                "19h - 22h45": [5,7]
+            }
 
             for chave, valor in corresp_horarios.items():
                 if hr in valor:
                     horario = chave  
     
-            turma_rp1_prof = RP1Turma.objects.get(professor_si = professor)
+            turma_rp1_prof = RP1Turma.objects.get(professor_si = professor, ano=ano)
             try: 
                 dia_alerta_rp1 = DiaAulaRP1.objects.filter(turma_rp1=turma_rp1_prof, dia_semana = dia, horario = horario)
                 print(f"dia_alerta_rp1: {dia_alerta_rp1}")
@@ -424,10 +424,12 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
 
         try:
             dia_alerta_tadi = adaptacao_noite_outro_dia_manha_tadi(hr, professor, ano, dia, horario)
+            print(f"dia alerta{dia_alerta_tadi}")
             if dia_alerta_tadi: break
-
         except:
             pass
+
+
 
     if dia_alerta:
         dia = dia_alerta.first().get_DiaSemana_display().lower()
@@ -438,9 +440,11 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
             dia = dia_lado
             dia_lado = aux
 
-        alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
 
-                          f"aula na noite de {dia_lado} e de manhã na {dia}\n")
+        alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
+                          f"aula na noite de {dia_lado} e de manhã na {dia}\n"
+                             f"O alerta provem da grade comum, "
+                             f"olhe a planilha de atribuição para saber a disciplina conflitante")
 
 
     if dia_alerta_rp1 or dia_alerta_tadi:
@@ -451,26 +455,42 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
             dia = dia_lado
             dia_lado = aux
 
+
+        if dia_alerta_tadi:
+            grade_alerta = "ACH0021 TADI"
+        elif dia_alerta_rp1:
+            grade_alerta = "ACH0041 RP1"
+
+
         alertas["alert2"] = (f"Professor(a) {inf['professor']} vai estar dando "
-                          f"aula na noite de {dia_lado} e de manhã na {dia}\n")
+                          f"aula na noite de {dia_lado} e de manhã na {dia}.\n"
+                            f"A turma da grade {grade_alerta} e do 1º semestre causou o alerta")
 
 
 
 
 def adaptacao_noite_outro_dia_manha_tadi(hr, professor, ano, dia, horario):
+    if isinstance(hr, list):
+        hr = tuple(hr)
+
     # adaptações necessárias para conferência do caso de tadi
     corresp_horarios_tadi = {
         0: "8:00 - 09:45h",
-        7: "21:00 - 22:45h"
+        7: "21:00 - 22:45h",
+        (0,1): "8:00 - 09:45h",
+        (5,7): "21:00 - 22:45h"
     }
 
     horario = corresp_horarios_tadi[hr]
+    turma_tadi_prof = TadiTurma.objects.filter(professor_si=professor, ano=ano)
 
-    turma_tadi_prof = TadiTurma.objects.get(professor_si=professor, ano=ano)
-
-    dia_alerta_tadi = DiaAulaTadi.objects.filter(turma_tadi=turma_tadi_prof, dia_semana=dia,
+    for tur in turma_tadi_prof:
+        dia_alerta_tadi = DiaAulaTadi.objects.filter(turma_tadi=tur, dia_semana=dia,
                                                  horario=horario)
-    return dia_alerta_tadi
+        if dia_alerta_tadi:
+            return dia_alerta_tadi
+
+
 
 
 def aula_msm_horario(inf, ano, data, erros):

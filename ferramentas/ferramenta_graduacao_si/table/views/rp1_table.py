@@ -221,16 +221,15 @@ def salvar_profs_rp1(request):
             print("Verificando")
 
             # aula_manha_noite(data, alertas, ano)
-            # aula_noite_outro_dia_manha(data, alertas, ano)
-            print("Verificar conflito")
+            aula_noite_outro_dia_manha(data, alertas, ano)
             conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas)
-
+            
             # print("Atenção aqui")
             # print(conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas))
             # print(aula_msm_horario(data["info"], ano, data, erros))
             # print("do professor " + data["info"]["professor"])
+
             if horario in (0, 2, 5): conf_tbl = conflito_hr_na_tbl_rp1(dia_aula_rp1, prof_bd, ano, erros)
-            print("Verificando resultado")
             confl_hr = aula_msm_horario(data["info"], ano, data, erros)
             print(confl_hr)
             if confl_hr: break

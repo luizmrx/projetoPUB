@@ -131,17 +131,17 @@ const save_edition = {
                 });
 
                 if(prof_hr_err){
-                    const cell = $(cell_cod).next();
-                    col++;
-                    if(content["tipo"] === "u" && content.hasOwnProperty('ant_prof')){
-                        $(cell).html(content["ant_prof"]);
+                    // const cell = $(cell_cod).next();
+                    // col++;
+                    // if(content["tipo"] === "u" && content.hasOwnProperty('ant_prof')){
+                    //     $(cell).html(content["ant_prof"]);
 
-                    }else if(content["tipo"] === "i"){
-                        $(cell).html(""); 
-                    }
+                    // }else if(content["tipo"] === "i"){
+                    //     $(cell).html(""); 
+                    // }
                     openModal("ERRO", erros["prof_msm_hr"]);
                     $('#myModal').on('hidden.bs.modal', function () {
-                        editable.edit(cell.get(0), row, col, content["extra"]);
+                        //editable.edit(cell.get(0), row, col, content["extra"]);
                         location.reload(true)
                         return;
                     });
@@ -174,6 +174,7 @@ const save_edition = {
                         alerta_msg += alertas["alert2"]
                     }
                     openModal("Warning(s)", alerta_msg);
+                    location.reload(true)
                 } else {
                     location.reload(true)
                 } 
