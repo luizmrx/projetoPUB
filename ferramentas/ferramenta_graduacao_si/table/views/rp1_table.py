@@ -220,6 +220,7 @@ def salvar_profs_rp1(request):
             }
             print("Verificando")
 
+            # A função aula_manha_noite não está funcionando adequadamente. Por hora, a função conflito_aula_manha_noite está alertando o caso de um prof estar dando aula de manha e a noite somente na tabela de rp1. A correção da função aula_manha_noite irá considerar as demais planilhas e, assim que ela estiver funcionando como o esperado, poderá ser excluída a função conflito_aula_manha_noite
             # aula_manha_noite(data, alertas, ano)
             aula_noite_outro_dia_manha(data, alertas, ano)
             conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas)
@@ -297,15 +298,15 @@ def conflito_aula_manha_noite(dia_gravar, prof, ano, alertas):
         # print(dia_gravar.horario)
 
         dias = {
-            ("Seg", "19h - 22h45", "Ter", "08h - 12h"),
-            ("Ter", "19h - 22h45", "Qua", "08h - 12h"),
-            ("Qua", "19h - 22h45", "Qui", "08h - 12h"),
-            ("Qui", "19h - 22h45", "Sex", "08h - 12h"),
+            # ("Seg", "19h - 22h45", "Ter", "08h - 12h"),
+            # ("Ter", "19h - 22h45", "Qua", "08h - 12h"),
+            # ("Qua", "19h - 22h45", "Qui", "08h - 12h"),
+            # ("Qui", "19h - 22h45", "Sex", "08h - 12h"),
 
-            ("Ter", "08h - 12h", "Seg", "19h - 22h45"),
-            ("Qua", "08h - 12h", "Ter", "19h - 22h45"),
-            ("Qui", "08h - 12h", "Qua", "19h - 22h45"),
-            ("Sex", "08h - 12h", "Qui", "19h - 22h45"),
+            # ("Ter", "08h - 12h", "Seg", "19h - 22h45"),
+            # ("Qua", "08h - 12h", "Ter", "19h - 22h45"),
+            # ("Qui", "08h - 12h", "Qua", "19h - 22h45"),
+            # ("Sex", "08h - 12h", "Qui", "19h - 22h45"),
 
             ("Seg", "08h - 12h", "Seg", "19h - 22h45"),
             ("Ter", "08h - 12h", "Ter", "19h - 22h45"),
@@ -336,7 +337,7 @@ def conflito_aula_manha_noite(dia_gravar, prof, ano, alertas):
                     f"Professor(a) {prof.NomeProf} está dando"
                     f" aula de manhã e de noite na {dia_gravar.dia_semana}"
                 )
-            alertas["prof_msm_hr"] = msg
+            alertas["alert2"] = msg
             return True
 
 def contar_professores(lista_professores):
@@ -378,7 +379,7 @@ def gera_sugestoes_rp1(ano):
             if prof in dict_prof_preview:
                 dict_prof_preview[prof] -= 1
 
-            # Comentar o próximo trecho para poder testar o mesmo professor na tabela de rp1
+            # Comentar o próximo trecho para poder testar o mesmo professor na tabela de rp1 (somente para teste)
             if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
                 del auto_profs[prof.NomeProf]
 
