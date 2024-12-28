@@ -126,6 +126,7 @@ $(document).ready(function() {
                   "X-CSRFToken": getCookie("csrftoken"), 
                 },
                 success: (data) => {
+                    console.log(data)
                     const erros = data["erros"];
                     const alertas = data["alertas"];
                     auto_profs = data["sugestoes"]
@@ -150,7 +151,7 @@ $(document).ready(function() {
                     
                     if(alertas && Object.keys(alertas).length !== 0){
 
-                        openModal("Warning(s)", alertas["prof_msm_hr"]);
+                        openModal("Warning(s)", alertas["alert2"]);
 
                     }
 
