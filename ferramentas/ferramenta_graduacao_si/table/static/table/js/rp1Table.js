@@ -75,11 +75,13 @@ $(document).ready(function() {
             professor2: campo2Value,
             professor3: campo3Value,
         }
-        
+        console.log(apelidos)
+        console.log(resposta)
+        //Há um erro no valor que o campoValue terá devidos as alterações feitas em rp1_table. Como o sistema deleta o professor que já foi escohido, o array apelidos não terá um professor escolhido anteriormente, causando um erro no cadastramento de mais de um professor na mesma turma, dia e horário de rp1
         campo1Value ? resposta.professor1 = apelidos[resposta.professor1] : ""
         campo2Value ? resposta.professor2 = apelidos[resposta.professor2] : ""
         campo3Value ? resposta.professor3 = apelidos[resposta.professor3] : ""
-
+        console.log(resposta)
         
         let resp = []
         if(resposta.professor1 != "") resp.push(resposta.professor1)

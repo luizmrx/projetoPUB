@@ -176,7 +176,7 @@ def salvar_profs_rp1(request):
 
     if data["lProfs"] == ['', '', '']:
         return JsonResponse({'status': 'String vazia', 'sugestoes': gera_sugestoes_rp1(ano)})
-    
+
     for prof in data["lProfs"]:
         erro_caso = {}
         alerta_caso = {}
@@ -198,9 +198,9 @@ def salvar_profs_rp1(request):
             "08h - 12h": [0,1],
             "14h - 18h": [2,4],
             "19h - 22h45": [5,7]
-        } 
-        
-        dia_aula_rp1 = DiaAulaRP1.objects.get(turma_rp1 = tur)          
+        }
+
+        dia_aula_rp1 = DiaAulaRP1.objects.get(turma_rp1 = tur)
         prof_bd = Professor.objects.get(NomeProf=prof)
 
         print(corresp_horarios[dia_aula_rp1.horario])
@@ -211,8 +211,8 @@ def salvar_profs_rp1(request):
                 "info": {
                     'cod_disc': 'ACH0041',
                     'professor': prof_bd.Apelido,
-                    'horario': horario, 
-                    'dia': corresp_dias_semana[dia_aula_rp1.dia_semana], 
+                    'horario': horario,
+                    'dia': corresp_dias_semana[dia_aula_rp1.dia_semana],
                     'extra': False,
                     "cod_turma": 0
                 },
@@ -222,26 +222,36 @@ def salvar_profs_rp1(request):
 
             # aula_manha_noite(data, alertas, ano)
             # aula_noite_outro_dia_manha(data, alertas, ano)
+            print("Verificar conflito")
             conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas)
-            
-            print("Atenção aqui")
-            print(conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas))
-            print(aula_msm_horario(data["info"], ano, data, erros))
-            print("do professor " + data["info"]["professor"])
-            if horario in (0, 2, 5): conf_tbl = conflito_hr_na_tbl_rp1(dia_aula_rp1, prof_bd, ano, erros)
-            if not conf_tbl and not aula_msm_horario(data["info"], ano, data, erros):
-                try:
-                    tur.professor_si.add(prof_bd)
-                except Exception as e:
-                    print("erroooo")
-            else:
-                erros["nome_prof"] = prof_bd.NomeProf
-                print(erros["nome_prof"])
-                
-            print("Verificando professores")
-            print(tur.professor_si)
 
-            restricoes = prof_bd.restricao_set.all()
+            # print("Atenção aqui")
+            # print(conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas))
+            # print(aula_msm_horario(data["info"], ano, data, erros))
+            # print("do professor " + data["info"]["professor"])
+            if horario in (0, 2, 5): conf_tbl = conflito_hr_na_tbl_rp1(dia_aula_rp1, prof_bd, ano, erros)
+            print("Verificando resultado")
+            confl_hr = aula_msm_horario(data["info"], ano, data, erros)
+            print(confl_hr)
+            if confl_hr: break
+
+
+        if not conf_tbl and not confl_hr:
+            try:
+                #Devemos priorizar o caso em que ocorre algum true, ou seja, a função aula_msm_horario será executada duas vezes, se em algum momento ela retornar true, então não podemos salvar o professor. Se ela não retornar true em nenhuma das duas chamadas, podemos salvar o professor no banco de dados.
+                tur.professor_si.add(prof_bd)
+                print("Salvou prof")
+                break
+            except Exception as e:
+                print("erroooo")
+        else:
+            erros["nome_prof"] = prof_bd.NomeProf
+            print(erros["nome_prof"])
+
+        print("Verificando professores")
+        print(tur.professor_si)
+
+        restricoes = prof_bd.restricao_set.all()
 
 
     print(erros)
@@ -281,34 +291,51 @@ def conflito_aula_manha_noite(dia_gravar, prof, ano, alertas):
 
         dia_gravado_bd = DiaAulaRP1.objects.get(turma_rp1=turma)
 
-        print("ultima funcao")
-        print(dia_gravado_bd.dia_semana)
-        print(dia_gravado_bd.horario)
-        print(dia_gravar.dia_semana)
-        print(dia_gravar.horario)
+        # print("verificando dias e horarios")
+        # print(dia_gravado_bd.dia_semana)
+        # print(dia_gravado_bd.horario)
+        # print(dia_gravar.dia_semana)
+        # print(dia_gravar.horario)
 
-        condicoes = {
-            ("Seg", "19h - 22h45", "Ter", "08h - 12h"): True,
-            ("Ter", "19h - 22h45", "Qua", "08h - 12h"): True,
-            ("Qua", "19h - 22h45", "Qui", "08h - 12h"): True,
-            ("Qui", "19h - 22h45", "Sex", "08h - 12h"): True,
+        dias = {
+            ("Seg", "19h - 22h45", "Ter", "08h - 12h"),
+            ("Ter", "19h - 22h45", "Qua", "08h - 12h"),
+            ("Qua", "19h - 22h45", "Qui", "08h - 12h"),
+            ("Qui", "19h - 22h45", "Sex", "08h - 12h"),
 
-            ("Ter", "08h - 12h", "Seg", "19h - 22h45"): True,
-            ("Qua", "08h - 12h", "Ter", "19h - 22h45"): True,
-            ("Qui", "08h - 12h", "Qua", "19h - 22h45"): True,
-            ("Sex", "08h - 12h", "Qui", "19h - 22h45"): True,
+            ("Ter", "08h - 12h", "Seg", "19h - 22h45"),
+            ("Qua", "08h - 12h", "Ter", "19h - 22h45"),
+            ("Qui", "08h - 12h", "Qua", "19h - 22h45"),
+            ("Sex", "08h - 12h", "Qui", "19h - 22h45"),
+
+            ("Seg", "08h - 12h", "Seg", "19h - 22h45"),
+            ("Ter", "08h - 12h", "Ter", "19h - 22h45"),
+            ("Qua", "08h - 12h", "Qua", "19h - 22h45"),
+            ("Qui", "08h - 12h", "Qui", "19h - 22h45"),
+            ("Sex", "08h - 12h", "Sex", "19h - 22h45"),
         }
 
+        condicoes = {cond: True for cond in dias}
+        
+
         if (dia_gravado_bd.dia_semana, dia_gravado_bd.horario, dia_gravar.dia_semana, dia_gravar.horario) in condicoes:
-            if(dia_gravado_bd.horario=="19h - 22h45"):
+
+            if dia_gravado_bd.horario=="19h - 22h45" :
                 msg=(
                     f"Professor(a) {prof.NomeProf} está dando"
                     f" aula de noite na {dia_gravado_bd.dia_semana} e de manhã na {dia_gravar.dia_semana}"
                 )
-            else:
+                
+            elif dia_gravado_bd.horario=="08h - 12h" and dia_gravado_bd.dia_semana!=dia_gravar.dia_semana:
                 msg=(
                     f"Professor(a) {prof.NomeProf} está dando"
                     f" aula de noite na {dia_gravar.dia_semana} e de manhã na {dia_gravado_bd.dia_semana}"
+                )
+
+            elif dia_gravado_bd.horario=="08h - 12h" and dia_gravado_bd.dia_semana==dia_gravar.dia_semana:
+                msg=(
+                    f"Professor(a) {prof.NomeProf} está dando"
+                    f" aula de manhã e de noite na {dia_gravar.dia_semana}"
                 )
             alertas["prof_msm_hr"] = msg
             return True
@@ -352,6 +379,7 @@ def gera_sugestoes_rp1(ano):
             if prof in dict_prof_preview:
                 dict_prof_preview[prof] -= 1
 
+            # Comentar o próximo trecho para poder testar o mesmo professor na tabela de rp1
             if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
                 del auto_profs[prof.NomeProf]
 
