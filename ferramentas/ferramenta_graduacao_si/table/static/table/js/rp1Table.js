@@ -138,7 +138,7 @@ $(document).ready(function() {
                     if(erros && erros.hasOwnProperty("prof_msm_hr")){
                         prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
                     } 
-                    
+                     
                     if(prof_hr_err){
                         openModal("ERRO", erros["prof_msm_hr"]);
                         let indice = prof_permitidos.indexOf(erros["nome_prof"])

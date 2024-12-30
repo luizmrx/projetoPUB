@@ -174,7 +174,8 @@ const save_edition = {
                         alerta_msg += alertas["alert2"]
                     }
                     openModal("Warning(s)", alerta_msg);
-                    location.reload(true)
+                    //location.reload(true)
+                    //Esse carregamento impede de aparecer o aviso corretamente pois logo que o aviso aparece a página já é reiniciada
                 } else {
                     location.reload(true)
                 } 

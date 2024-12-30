@@ -205,7 +205,7 @@ def cadastrar_turma(turma, ano, smt):
         return nova_turma
     except IntegrityError:
         return False
-
+ 
 
 def cadastrar_dia(turma_db, turma_user):
     dia_materia = Dia(DiaSemana=turma_user["dia"], Horario=turma_user["horario"])
@@ -271,6 +271,7 @@ def aula_manha_noite(data, alertas, ano):
     # lista das linhas que representam a manhã e noite
     if inf["horario"] not in [0,1,5,7]: return False
     
+    # horario representa o horário correspondente para ocorrer o alerta
     horario = (0, 1) if inf["horario"] in [5,7] else (5,7)
 
 
@@ -282,6 +283,13 @@ def aula_manha_noite(data, alertas, ano):
 
     manha_noite_rp1 = False
     manha_noite_tadi = False
+    horario_rp =""
+    dia = ""
+
+    # para verificarmos se há algum conflito de horário, temos que fazer a verificação nas três tabelas, ou melhor, no banco de dados das três tabelas.
+
+    # Primeiro vamos verificar na tabela de distribuição. Lembre-se que temos que verificar um possível conflitos em todos os semestres possíveis.
+
     for semestre in semestres_testados:
 
         manha_noite = Dia.objects.filter(DiaSemana= inf["dia"], Horario__in = horario,
@@ -289,6 +297,8 @@ def aula_manha_noite(data, alertas, ano):
                                             Turmas__CoDisc__SemestreIdeal=semestre,
                                             Turmas__Ano=ano)
 
+        # as turmas de rp1 e tadi já estão formadas no bd, quando escolhemos um professor apenas selecionamos ele para aquela turma em específico, mas não criamos nenhuma turma. Nesse caso, 
+        
         if manha_noite: break
 
         corresp_dias_semana = {
@@ -299,6 +309,7 @@ def aula_manha_noite(data, alertas, ano):
             "Sex": 8
         }
 
+        # captura o dia da semana
         for chave, valor in corresp_dias_semana.items():
             if valor == inf["dia"]:
                 dia = chave
@@ -306,22 +317,24 @@ def aula_manha_noite(data, alertas, ano):
         try:
             # adaptações necessárias para conferência do caso de rp1
             corresp_horarios = {
-                    "08h - 12h": [0,1],
-                    "14h - 18h": [2,4],
-                    "19h - 22h45": [5,7]
+                    "08h - 12h": (0,1),
+                    "14h - 18h": (2,4),
+                    "19h - 22h45": (5,7),
                 }
+            # captura o horário de aula
             for chave, valor in corresp_horarios.items():
-                if horario in valor:
+                if horario == valor:
                     horario_rp = chave
 
+            # Vamos verificar a turma de RP
             turma_rp1_prof = RP1Turma.objects.get(professor_si = professor, ano=ano)
             try:
-                manha_noite_rp1 = DiaAulaRP1.objects.filter(turma_rp1=turma_rp1_prof, turma_rp1__ano=ano,
-                                                            dia_semana = dia, horario = horario_rp)
+                manha_noite_rp1 = DiaAulaRP1.objects.filter(turma_rp1= turma_rp1_prof, turma_rp1__ano= ano, dia_semana = dia, horario= horario_rp)
                 if manha_noite_rp1: break
             except: pass
         except: pass
 
+        # Vamos verificar a turma de Tadi
         try:
             # adaptações necessárias para conferência do caso de TADI
             corresp_horarios = {
@@ -344,12 +357,12 @@ def aula_manha_noite(data, alertas, ano):
 
     if manha_noite:
         dia = manha_noite.first().get_DiaSemana_display().lower()
-        alertas["aula_manha_noite"] = (f"Professor(a) {inf['professor']} vai "
+        alertas["alert2"] = (f"Professor(a) {inf['professor']} vai "
                                        f"estar dando aula de manhã e a noite na {dia}.\n")
         return
 
     if manha_noite_rp1 or manha_noite_tadi:
-        alertas["aula_manha_noite"] = (f"Professor(a) {inf['professor']} vai "
+        alertas["alert2"] = (f"Professor(a) {inf['professor']} vai "
                                        f"estar dando aula de manhã e a noite na {dia}.\n")
         return
 
@@ -510,7 +523,8 @@ def aula_msm_horario(inf, ano, data, erros):
         if conflito_hr:
             aux = t
             break
-
+    
+    
     if conflito_hr:
         msg = (
             f"Conflito na {str(conflito_hr.first())}"
@@ -519,7 +533,7 @@ def aula_msm_horario(inf, ano, data, erros):
         )
         erros["prof_msm_hr"] = msg
         return True
-
+    
 
     if inf["cod_disc"] != "ACH0041":
     
@@ -559,8 +573,8 @@ def aula_msm_horario(inf, ano, data, erros):
             erro_msm_hr(conflito_hr_rp1, erros, inf)
             return True
 
-        if inf["cod_disc"] != "ACH0021":
-            return conflito_hr_tadi(inf, prof, erros, ano)
+    if inf["cod_disc"] != "ACH0021":
+        return conflito_hr_tadi(inf, prof, erros, ano)
 
 
 def conflito_hr_tadi(inf, prof, erros, ano):

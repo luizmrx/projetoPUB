@@ -218,15 +218,9 @@ def salvar_profs_rp1(request):
                 },
                 "semestre": 1
             }
-            print("Verificando")
-
-            # A função aula_manha_noite não está funcionando adequadamente. Por hora, a função conflito_aula_manha_noite está alertando o caso de um prof estar dando aula de manha e a noite somente na tabela de rp1. A correção da função aula_manha_noite irá considerar as demais planilhas e, assim que ela estiver funcionando como o esperado, poderá ser excluída a função conflito_aula_manha_noite
-            # aula_manha_noite(data, alertas, ano)
+            aula_manha_noite(data, alertas, ano)
             aula_noite_outro_dia_manha(data, alertas, ano)
-            conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas)
             
-            # print("Atenção aqui")
-            # print(conflito_aula_manha_noite(dia_aula_rp1, prof_bd, ano, alertas))
             # print(aula_msm_horario(data["info"], ano, data, erros))
             # print("do professor " + data["info"]["professor"])
 
@@ -234,7 +228,7 @@ def salvar_profs_rp1(request):
             confl_hr = aula_msm_horario(data["info"], ano, data, erros)
             print(confl_hr)
             if confl_hr: break
-
+ 
 
         if not conf_tbl and not confl_hr:
             try:
@@ -282,63 +276,6 @@ def conflito_hr_na_tbl_rp1(dia_gravar, prof, ano, erros):
             erros["prof_msm_hr"] = msg
             return True
         
-
-def conflito_aula_manha_noite(dia_gravar, prof, ano, alertas):
-
-    turmas = RP1Turma.objects.filter(professor_si=prof, ano=ano)
-
-    for turma in turmas:
-
-        dia_gravado_bd = DiaAulaRP1.objects.get(turma_rp1=turma)
-
-        # print("verificando dias e horarios")
-        # print(dia_gravado_bd.dia_semana)
-        # print(dia_gravado_bd.horario)
-        # print(dia_gravar.dia_semana)
-        # print(dia_gravar.horario)
-
-        dias = {
-            # ("Seg", "19h - 22h45", "Ter", "08h - 12h"),
-            # ("Ter", "19h - 22h45", "Qua", "08h - 12h"),
-            # ("Qua", "19h - 22h45", "Qui", "08h - 12h"),
-            # ("Qui", "19h - 22h45", "Sex", "08h - 12h"),
-
-            # ("Ter", "08h - 12h", "Seg", "19h - 22h45"),
-            # ("Qua", "08h - 12h", "Ter", "19h - 22h45"),
-            # ("Qui", "08h - 12h", "Qua", "19h - 22h45"),
-            # ("Sex", "08h - 12h", "Qui", "19h - 22h45"),
-
-            ("Seg", "08h - 12h", "Seg", "19h - 22h45"),
-            ("Ter", "08h - 12h", "Ter", "19h - 22h45"),
-            ("Qua", "08h - 12h", "Qua", "19h - 22h45"),
-            ("Qui", "08h - 12h", "Qui", "19h - 22h45"),
-            ("Sex", "08h - 12h", "Sex", "19h - 22h45"),
-        }
-
-        condicoes = {cond: True for cond in dias}
-        
-
-        if (dia_gravado_bd.dia_semana, dia_gravado_bd.horario, dia_gravar.dia_semana, dia_gravar.horario) in condicoes:
-
-            if dia_gravado_bd.horario=="19h - 22h45" :
-                msg=(
-                    f"Professor(a) {prof.NomeProf} está dando"
-                    f" aula de noite na {dia_gravado_bd.dia_semana} e de manhã na {dia_gravar.dia_semana}"
-                )
-                
-            elif dia_gravado_bd.horario=="08h - 12h" and dia_gravado_bd.dia_semana!=dia_gravar.dia_semana:
-                msg=(
-                    f"Professor(a) {prof.NomeProf} está dando"
-                    f" aula de noite na {dia_gravar.dia_semana} e de manhã na {dia_gravado_bd.dia_semana}"
-                )
-
-            elif dia_gravado_bd.horario=="08h - 12h" and dia_gravado_bd.dia_semana==dia_gravar.dia_semana:
-                msg=(
-                    f"Professor(a) {prof.NomeProf} está dando"
-                    f" aula de manhã e de noite na {dia_gravar.dia_semana}"
-                )
-            alertas["alert2"] = msg
-            return True
 
 def contar_professores(lista_professores):
     contagem = {}
