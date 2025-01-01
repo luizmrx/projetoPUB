@@ -15,7 +15,7 @@ from django.db.models import Prefetch, Count, Q, Max, Value
 from datetime import datetime
 from openpyxl.styles import PatternFill, Font
 
-#OBS: planilha de docentes = planilha docentes
+#OBS: planilha de docentes = planilha atribuicao
 def planilha_docentes(sheet_doc):
     # carregando os dados na memória
     ano_funcionamento = Ano=AnoAberto.objects.get(id=1).Ano

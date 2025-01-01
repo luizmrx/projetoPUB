@@ -402,7 +402,6 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
 
         if dia_alerta: break
 
-
         corresp_dias_semana = {
             "Seg": 0,
             "Ter": 2,
@@ -430,19 +429,15 @@ def aula_noite_outro_dia_manha(data, alertas, ano):
             turma_rp1_prof = RP1Turma.objects.get(professor_si = professor, ano=ano)
             try: 
                 dia_alerta_rp1 = DiaAulaRP1.objects.filter(turma_rp1=turma_rp1_prof, dia_semana = dia, horario = horario)
-                print(f"dia_alerta_rp1: {dia_alerta_rp1}")
                 if dia_alerta_rp1: break
             except: pass
         except: pass
 
         try:
             dia_alerta_tadi = adaptacao_noite_outro_dia_manha_tadi(hr, professor, ano, dia, horario)
-            print(f"dia alerta{dia_alerta_tadi}")
             if dia_alerta_tadi: break
         except:
             pass
-
-
 
     if dia_alerta:
         dia = dia_alerta.first().get_DiaSemana_display().lower()

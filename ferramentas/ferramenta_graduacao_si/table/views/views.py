@@ -1,13 +1,14 @@
 import os
 import zipfile
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import json
 from openpyxl.reader.excel import load_workbook
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 import unicodedata
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required
+
 
 from .planilha_distribuicao import *
 from .planilha_docentes import *
@@ -468,22 +469,19 @@ def pref_planilha(request):
         excel_file = request.FILES.get("excel_file", None)
         excel_type = request.POST["excel_type"]
 
-        #FUNÇÂO menu, o redirect deu erro
-        ano = int(AnoAberto.objects.get(id=1).Ano)
-        anos_ant = [i for i in range(2015, ano)]
-        context = {
-            "anos_ant": anos_ant,
-            "anoAberto": ano,
-            "sem_tur": turmas_obrigatórias_sem_horario(ano),
-            "falta_aula": menos8_horas_aula_prof(ano)
-        }
-
-
         if not excel_file:
-            return redirect("ferramenta_graduacao_si:menu")
+            return render(
+                request, "table/menu.html", {"error_message": "Nenhum arquivo enviado."}
+            )
 
         if not excel_file.name.endswith(".xlsx"):
-            return redirect("ferramenta_graduacao_si:menu")
+            return render(
+                request,
+                "table/menu.html",
+                {
+                    "error_message": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx."
+                },
+            )
 
         try:
             workbook = openpyxl.load_workbook(excel_file)
@@ -496,8 +494,9 @@ def pref_planilha(request):
                 Preferencias.objects.filter(AnoProf=ano).delete()
                 Restricao.objects.all().delete()
                 MtvRestricao.objects.all().delete()
+                justificativaMenos8Horas.objects.all().delete()
 
-            for row in worksheet.iter_rows(min_row=2, max_col=39, values_only=True):
+            for row in worksheet.iter_rows(min_row=2, max_col=79, values_only=True):
 
                 email = row[1]
                 if not isinstance(email, str) or email == "":
@@ -513,60 +512,71 @@ def pref_planilha(request):
                         prof_encontrado = True
 
                 if not prof_encontrado:
+                    print(f"PROFESSOR EMAIL { email_professor } NÃO ENCONTRADO")
                     continue
 
                 semestre_par = True if excel_type == "pref_hro_2" else False
-                # executar essa linha direto, com o email da planilha usando o try catch
+
                 prof_db = Professor.objects.get(Email=email_professor)
 
                 if semestre_par:
                     prof_db.consideracao2 = row[9]
                 else:
-                    prof_db.consideracao1 = row[37]
-                    prof_db.pos_doc = row[33]
-                    prof_db.pref_optativas = row[32]
+
+                    prof_db.consideracao1 = row[78]
+                    if row[31]:
+                        justificativaMenos8Horas(professor=prof_db, justificativa="licenca_premio", ano=ano, semestre_ano="P", texto_justificando=row[33]).save()
+                    elif row[32]:
+                        justificativaMenos8Horas(professor=prof_db, justificativa="licenca_premio", ano=ano, semestre_ano="I", texto_justificando=row[33]).save()
+
+                    if row[34]:
+                        justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc",ano=ano, semestre_ano="P",
+                                                 texto_justificando=row[36]).save()
+                    elif row[35]:
+                        justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc", ano=ano, semestre_ano="I",
+                                                 texto_justificando=row[36]).save()
+
                     pref_disc_excel_impar("impar", row, prof_db, header)
                     pref_disc_excel_impar("par", row, prof_db, header)
+                    pref_disc_excel_impar("opt", row, prof_db, header)
 
                 prof_db.save()
                 pref_horarios(row, prof_db, semestre_par)
 
-                # print(f"coluna AI{row[34]}, coluna AK{pref_horario}")
-            # return render(
-            #     request,
-            #     "table/menu.html",
-            #     {"success_message": "Dados de preferência salvos com sucesso."},
-            # )
-            # return redirect("ferramenta_graduacao_si:menu")
+            return redirect("ferramenta_graduacao_si:menupage")
 
-            return render(request, "table/menu.html", context)
         except Exception as e:
-            return render(request, "table/menu.html", context)
+            print(e)
+            return render(
+                request,
+                "table/menu.html",
+                {"error_message": "Ocorreu um erro ao processar o arquivo."},
+            )
 
 
-
-
-
-# Versão para o novo forms - ainda em desenvolvimento
+# Versão do antigo forms
 # @login_required
 # def pref_planilha(request):
 #     if request.method == "POST":
 #         excel_file = request.FILES.get("excel_file", None)
 #         excel_type = request.POST["excel_type"]
 #
+#         #FUNÇÂO menu, o redirect deu erro
+#         ano = int(AnoAberto.objects.get(id=1).Ano)
+#         anos_ant = [i for i in range(2015, ano)]
+#         context = {
+#             "anos_ant": anos_ant,
+#             "anoAberto": ano,
+#             "sem_tur": turmas_obrigatórias_sem_horario(ano),
+#             "falta_aula": menos8_horas_aula_prof(ano)
+#         }
+#
+#
 #         if not excel_file:
-#             return render(
-#                 request, "table/menu.html", {"error_message": "Nenhum arquivo enviado."}
-#             )
+#             return redirect("ferramenta_graduacao_si:menu")
 #
 #         if not excel_file.name.endswith(".xlsx"):
-#             return render(
-#                 request,
-#                 "table/menu.html",
-#                 {
-#                     "error_message": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx."
-#                 },
-#             )
+#             return redirect("ferramenta_graduacao_si:menu")
 #
 #         try:
 #             workbook = openpyxl.load_workbook(excel_file)
@@ -596,37 +606,18 @@ def pref_planilha(request):
 #                         prof_encontrado = True
 #
 #                 if not prof_encontrado:
-#                     print(f"PROFESSOR EMAIL { email_professor } NÃO ENCONTRADO")
 #                     continue
 #
-#                 # para o semestre_par sendo false a planilha mudou para uma nova
-#                 # o código abaixo que pega os dados da planilha antiga estão comentados
-#                 # caso queira utilizar ela para carregar restrições, por exemplo, mude os comentários
-#
 #                 semestre_par = True if excel_type == "pref_hro_2" else False
-#
+#                 # executar essa linha direto, com o email da planilha usando o try catch
 #                 prof_db = Professor.objects.get(Email=email_professor)
 #
 #                 if semestre_par:
 #                     prof_db.consideracao2 = row[9]
 #                 else:
-#                     # prof_db.consideracao1 = row[37]
-#                     # prof_db.pos_doc = row[33]
-#                     # prof_db.pref_optativas = row[32]
-#
-#                     prof_db.consideracao1 = row[78]
-#                     if row[31]:
-#                         justificativaMenos8Horas(professor=prof_db, ano=ano, semestre_ano="P", texto_justificando=row[33]).save()
-#                     elif row[32]:
-#                         justificativaMenos8Horas(professor=prof_db, ano=ano, semestre_ano="I", texto_justificando=row[33]).save()
-#
-#                     if row[34]:
-#                         justificativaMenos8Horas(professor=prof_db, ano=ano, semestre_ano="P",
-#                                                  texto_justificando=row[36]).save()
-#                     elif row[35]:
-#                         justificativaMenos8Horas(professor=prof_db, ano=ano, semestre_ano="I",
-#                                                  texto_justificando=row[36]).save()
-#
+#                     prof_db.consideracao1 = row[37]
+#                     prof_db.pos_doc = row[33]
+#                     prof_db.pref_optativas = row[32]
 #                     pref_disc_excel_impar("impar", row, prof_db, header)
 #                     pref_disc_excel_impar("par", row, prof_db, header)
 #
@@ -634,19 +625,17 @@ def pref_planilha(request):
 #                 pref_horarios(row, prof_db, semestre_par)
 #
 #                 # print(f"coluna AI{row[34]}, coluna AK{pref_horario}")
-#             return render(
-#                 request,
-#                 "table/menu.html",
-#                 {"success_message": "Dados de preferência salvos com sucesso."},
-#             )
+#             # return render(
+#             #     request,
+#             #     "table/menu.html",
+#             #     {"success_message": "Dados de preferência salvos com sucesso."},
+#             # )
+#             # return redirect("ferramenta_graduacao_si:menu")
+#
+#             return render(request, "table/menu.html", context)
 #         except Exception as e:
-#             print(e)
-#             return render(
-#                 request,
-#                 "table/menu.html",
-#                 {"error_message": "Ocorreu um erro ao processar o arquivo."},
-#             )
-#
-#     return render(request, "table/menu.html")
-#
-#
+#             return render(request, "table/menu.html", context)
+
+
+
+

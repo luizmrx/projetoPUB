@@ -99,7 +99,6 @@
                         <ul>
                             <li><p>Essa planilhas deve ser vindas do forms de preferências, seguindo o modelo</p></li>
                             <li><p>Carregar as preferências de disciplinas para todo o ano é essencial para a atribuição automática</p></li>
-
                         </ul>
                         <form method="post" action="{% url 'ferramenta_graduacao_si:process_file' %}" enctype="multipart/form-data">
                             {% csrf_token %}
@@ -160,7 +159,6 @@
                 <div class="d-none" id="item-4">
                     <h5>Considerações</h5>
                     <ul>
-                        
                         <li>Três planilhas serão baixadas compactadas em um arquivo.zip</li>
                         <li>Uma é a de atribuição, nomeada como docentes.xlsx, e o restante de distribuição</li>
                         <li>Use a de docentes.xlsx depois de gerar a atribuição automática, modifique-a e suba novamente ao sistema </li>
@@ -235,7 +233,7 @@
                         <h4>Gerar atribuição</h4>
                         <ul>
                             <li><p>Use essa função após abrir um novo ano de válido e ter feito o upload da planilha vinda
-                                do forms que contém as preferências dos professores para disciplinas de todo o ano.
+                                do forms que contém as preferências dos professores para disciplinas de todo o ano e registrado os horários de pós-graduação.
                             </p></li>
                             <li><p>Para ver a planilha de atribuição gerada automaticamente use a opção "baixar planilhas" desse menu.
                             </p></li>
@@ -250,13 +248,16 @@
                             <button type="submit" class="btn btn-warning">Gerar</button>
                         </form>
                         <br>
+                        <hr>
                         <h4>Upload</h4>
-                        
+                        <ul>
+                            <li><p> Faça o upload da planilha de atribuição modificada na opção abaixo
+                            </p></li>
+                            <li><p>O upload pode ser refeito quantas vezes forem necessárias, o sistema automaticamente gerenciará a deleção de turmas das GHs.
+                            </p></li>
+                        </ul>
                         <form method="post" action="{% url 'ferramenta_graduacao_si:load_atribuicao' %}" enctype="multipart/form-data">
                             {% csrf_token %}
-            
-                            <label for="inputFile" class="form-label">Após baixar a planilha docentes.xlsx, que é a de atribuição, faça o upload dela modificada abaixo.
-                                Ela servirá para sugerir professores nas tabelas de grades horárias do ano válido.</label>
                             <input type="file" class="form-control mb-3" id="inputFile" name="excel_file">
                             <button type="submit" class="btn btn-warning">Enviar</button>
                         </form>
