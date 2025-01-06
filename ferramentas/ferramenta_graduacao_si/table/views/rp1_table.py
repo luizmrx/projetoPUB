@@ -114,6 +114,7 @@ def page_rp1(request, text=""):
     context = {
         "rp1": rp1_turmas,
         "auto_profs": gera_sugestoes_rp1(ano_aberto),
+        "total_profs": profs_rp1(ano_aberto),
         "text_erro": text,
         "anoAberto": ano_aberto,
         "impedimentos_totais": impedimentos_totais,
@@ -235,18 +236,17 @@ def salvar_profs_rp1(request):
                 #Devemos priorizar o caso em que ocorre algum true, ou seja, a função aula_msm_horario será executada duas vezes, se em algum momento ela retornar true, então não podemos salvar o professor. Se ela não retornar true em nenhuma das duas chamadas, podemos salvar o professor no banco de dados.
                 tur.professor_si.add(prof_bd)
                 print("Salvou prof")
-                break
+                # break
             except Exception as e:
                 print("erroooo")
         else:
             erros["nome_prof"] = prof_bd.NomeProf
             print(erros["nome_prof"])
 
-        print("Verificando professores")
-        print(tur.professor_si)
-
         restricoes = prof_bd.restricao_set.all()
 
+    print("Verificando professores")
+    print(tur.professor_si.all())
 
     print(erros)
     print(alertas)
@@ -287,6 +287,15 @@ def contar_professores(lista_professores):
             contagem[professor] = 1
 
     return contagem
+
+def profs_rp1(ano):
+    profs_objs = RP1TurmaPreview.objects.filter(codigo=99).first().professor_si.all()
+    auto_profs = {}
+
+    for prof_obj in profs_objs:
+        auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
+
+    return auto_profs
 
 
 def gera_sugestoes_rp1(ano):

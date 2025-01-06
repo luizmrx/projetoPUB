@@ -24,6 +24,7 @@
     {%load static %}
     <script type="module" src="{% static 'table/js/rp1Table.js' %}"></script>
     {{ auto_profs|json_script:"auto_profs"}}
+    {{ total_profs|json_script:"total_profs"}}
     
     <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
     <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">

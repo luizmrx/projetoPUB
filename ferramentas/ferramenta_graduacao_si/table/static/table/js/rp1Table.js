@@ -1,5 +1,6 @@
 
 let auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
+let total_profs = JSON.parse(document.getElementById("total_profs").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
 
@@ -42,7 +43,7 @@ $(document).ready(function() {
 
         $("#popup").show();
         $("#submitForm").off("click").on("click", function(){
-            controlaPopUp(cell.prev(), auto_profs);
+            controlaPopUp(cell.prev(), total_profs);
         });
 
     });
@@ -77,7 +78,7 @@ $(document).ready(function() {
         }
         console.log(apelidos)
         console.log(resposta)
-        //Há um erro no valor que o campoValue terá devidos as alterações feitas em rp1_table. Como o sistema deleta o professor que já foi escohido, o array apelidos não terá um professor escolhido anteriormente, causando um erro no cadastramento de mais de um professor na mesma turma, dia e horário de rp1
+        
         campo1Value ? resposta.professor1 = apelidos[resposta.professor1] : ""
         campo2Value ? resposta.professor2 = apelidos[resposta.professor2] : ""
         campo3Value ? resposta.professor3 = apelidos[resposta.professor3] : ""
@@ -97,7 +98,7 @@ $(document).ready(function() {
             const idAlerta = "#" + i;
 
             $(idAlerta).hide()
-            if (auto_profs.hasOwnProperty(lProfs[i])) nomeEncontrado = true;
+            if (total_profs.hasOwnProperty(lProfs[i])) nomeEncontrado = true;
             if(lProfs[i] === "") nomeEncontrado = true;
 
             if (!nomeEncontrado) {
