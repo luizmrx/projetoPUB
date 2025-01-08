@@ -17,6 +17,9 @@ $(function() {
 })
 
 $(document).ready(function() {
+
+    let profsExluidos = {"prof_rp1":{}, "prof_rp2":{}, "prof_rp3":{}};
+
     $(".icone").mouseover(function() {
         $(this).css("color", "blue");
     });
@@ -42,6 +45,19 @@ $(document).ready(function() {
         count = 1;
 
         $("#popup").show();
+        
+        //Atualizando o auto_profs para o caso de haver algum campo já preenchido
+        const campos = ["#prof_rp1", "#prof_rp2", "#prof_rp3"];
+        campos.forEach(function(campoId){
+            const valor = $(campoId).val();
+            let campoIdDepoisDoHash = campoId.substring(1);
+
+            //Note que auto_profs irá variar conforme as turmas em que o prof estiver inscrito na planilha de distribuição e conforme ele já estiver selecionado em alguma outra turma de RP1. Devido a essa variação, não podemos utiliza-lo como uma forma de parâmetro pois haverá casos em que o nome do prof não estará na lista, causando um erro para encontrar o valor no pop-up (caso do prof já estar escrito na tabela e dar somente 1 aula). Dessa forma, utilizamos o total_profs que não varia e permite uma verificação segura dos dados.
+            if(total_profs.hasOwnProperty(valor)){
+                atualizaAutoProfs(valor, campoIdDepoisDoHash);
+            }
+        });
+
         $("#submitForm").off("click").on("click", function(){
             controlaPopUp(cell.prev(), total_profs);
         });
@@ -54,16 +70,59 @@ $(document).ready(function() {
                 let results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
                 response(results);
             },
-            minLength: 0
+            minLength: 0,
+            select: function(event, ui){
+                let profSelecionado = ui.item.value;
+                let profKey = $(this).attr('id');
+                atualizaAutoProfs(profSelecionado, profKey);
+            }
         })
     });
 
+    function autoComplementar(){
+        $("#prof_rp1, #prof_rp2, #prof_rp3").each(function(){
+            let celula = $(this);
+            celula.autocomplete({
+                source: function(request, response) {
+                    let results = $.ui.autocomplete.filter(Object.keys(auto_profs), request.term);
+                    response(results);
+                },
+            })
+        })
+    }
+
+    //Monitora os campos para restaurar a escolha do nome após apagado
+    $("#prof_rp1, #prof_rp2, #prof_rp3").on("input", function() {
+
+        let valorCampo = $(this).val();
+        let professorKey = $(this).attr("id");
+
+        if(valorCampo===""){
+            if(profsExluidos.hasOwnProperty(professorKey)){
+                let dicioInterno = profsExluidos[professorKey]
+                Object.assign(auto_profs, dicioInterno);
+                profsExluidos[professorKey]={};
+            }
+
+        }
+        autoComplementar();
+    });
+
+    function atualizaAutoProfs(profSelecionado, profKey){
+
+        //Utilizamos total_profs para garantirmos o resultado independente da situação. O auto_profs deve ser utilizado apenas para armazenar o resultado final da consulta, e não para confirmarmos algum nome.
+        profsExluidos[profKey][profSelecionado]= total_profs[profSelecionado];
+        delete auto_profs[profSelecionado];
+
+        autoComplementar();
+    };
     
    
     $("#closePopup").on("click", function(){
         $("#popup").hide()
     })
 
+    //Função a ser executada após o usuário clicar em Salvar
     function controlaPopUp(cell, apelidos){
 
         let resposta = {};
@@ -146,8 +205,6 @@ $(document).ready(function() {
                         if(indice !== -1){
                             prof_permitidos[indice]="";
                         }
-                        console.log("Caso de teste");
-                        console.log(prof_permitidos);
                     }else{
                         cell.html(resp);
                     }

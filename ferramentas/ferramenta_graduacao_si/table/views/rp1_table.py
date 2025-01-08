@@ -290,12 +290,12 @@ def contar_professores(lista_professores):
 
 def profs_rp1(ano):
     profs_objs = RP1TurmaPreview.objects.filter(codigo=99).first().professor_si.all()
-    auto_profs = {}
+    total_profs = {}
 
     for prof_obj in profs_objs:
-        auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
+        total_profs[prof_obj.NomeProf] = prof_obj.Apelido
 
-    return auto_profs
+    return total_profs
 
 
 def gera_sugestoes_rp1(ano):
