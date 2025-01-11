@@ -18,7 +18,7 @@ $(function() {
 
 $(document).ready(function() {
 
-    let profsExluidos = {"prof_rp1":{}, "prof_rp2":{}, "prof_rp3":{}};
+    let profsSelecionados = {"prof_rp1":{}, "prof_rp2":{}, "prof_rp3":{}};
 
     $(".icone").mouseover(function() {
         $(this).css("color", "blue");
@@ -59,7 +59,7 @@ $(document).ready(function() {
         });
 
         $("#submitForm").off("click").on("click", function(){
-            controlaPopUp(cell.prev(), total_profs);
+            controlaPopUp(cell.prev(), total_profs, profsSelecionados);
         });
 
     });
@@ -98,21 +98,21 @@ $(document).ready(function() {
         let professorKey = $(this).attr("id");
 
         if(valorCampo===""){
-            if(profsExluidos.hasOwnProperty(professorKey)){
-                let dicioInterno = profsExluidos[professorKey]
+            if(profsSelecionados.hasOwnProperty(professorKey)){
+                let dicioInterno = profsSelecionados[professorKey]
                 Object.assign(auto_profs, dicioInterno);
-                profsExluidos[professorKey]={};
+                profsSelecionados[professorKey]={};
             }
 
         }
         autoComplementar();
     });
 
-    function atualizaAutoProfs(profSelecionado, profKey){
+    function atualizaAutoProfs(prof, profKey){
 
         //Utilizamos total_profs para garantirmos o resultado independente da situação. O auto_profs deve ser utilizado apenas para armazenar o resultado final da consulta, e não para confirmarmos algum nome.
-        profsExluidos[profKey][profSelecionado]= total_profs[profSelecionado];
-        delete auto_profs[profSelecionado];
+        profsSelecionados[profKey][prof]= total_profs[prof];
+        delete auto_profs[prof];
 
         autoComplementar();
     };
@@ -123,7 +123,7 @@ $(document).ready(function() {
     })
 
     //Função a ser executada após o usuário clicar em Salvar
-    function controlaPopUp(cell, apelidos){
+    function controlaPopUp(cell, apelidos, profsSelecionados){
 
         let resposta = {};
         const campo1Value = document.querySelector(".campo1").value;
@@ -157,7 +157,11 @@ $(document).ready(function() {
             const idAlerta = "#" + i;
 
             $(idAlerta).hide()
-            if (total_profs.hasOwnProperty(lProfs[i])) nomeEncontrado = true;
+            if (auto_profs.hasOwnProperty(lProfs[i])) nomeEncontrado = true;
+            for(let key in profsSelecionados){
+                //Verifica se o prof já preenchido está no mesmo indice dos profsSelecionados
+                if(key.slice(7)==i+1 && profsSelecionados[key].hasOwnProperty(lProfs[i]))nomeEncontrado = true;
+            }
             if(lProfs[i] === "") nomeEncontrado = true;
 
             if (!nomeEncontrado) {
@@ -194,6 +198,7 @@ $(document).ready(function() {
                     auto_profs = data["sugestoes"]
                     
                     const restricao_prof = data["restricao_prof"]
+                    let falha = false;
                     
                     if(erros && erros.hasOwnProperty("prof_msm_hr")){
                         prof_hr_err = erros.hasOwnProperty("prof_msm_hr")
@@ -205,6 +210,7 @@ $(document).ready(function() {
                         if(indice !== -1){
                             prof_permitidos[indice]="";
                         }
+                        falha = true;
                     }else{
                         cell.html(resp);
                     }
@@ -212,7 +218,7 @@ $(document).ready(function() {
                     if(alertas && Object.keys(alertas).length !== 0){
 
                         openModal("Warning(s)", alertas["alert2"]);
-
+                        falha = true;
                     }
 
                     const row = cell.closest('tr');
@@ -228,6 +234,7 @@ $(document).ready(function() {
                     $("#popup").hide();
                     cell.html(resp.join(","));
                     coresRestrições();
+                    if(!falha) window.location.reload(); //Reseta profsSelecionados
                 },
 
                 error: (error) => {
