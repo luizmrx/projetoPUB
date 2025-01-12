@@ -120,6 +120,7 @@ $(document).ready(function() {
    
     $("#closePopup").on("click", function(){
         $("#popup").hide()
+        location.reload();
     })
 
     //Função a ser executada após o usuário clicar em Salvar
@@ -157,7 +158,7 @@ $(document).ready(function() {
             const idAlerta = "#" + i;
 
             $(idAlerta).hide()
-            if (auto_profs.hasOwnProperty(lProfs[i])) nomeEncontrado = true;
+            //if (auto_profs.hasOwnProperty(lProfs[i])) nomeEncontrado = true;
             for(let key in profsSelecionados){
                 //Verifica se o prof já preenchido está no mesmo indice dos profsSelecionados
                 if(key.slice(7)==i+1 && profsSelecionados[key].hasOwnProperty(lProfs[i]))nomeEncontrado = true;
@@ -170,7 +171,7 @@ $(document).ready(function() {
                 $(idAlerta).css("font-size", "12px");
                 $(idAlerta).show()
                 validInput = false;
-                break;
+                // break;
             }               
         }
 
