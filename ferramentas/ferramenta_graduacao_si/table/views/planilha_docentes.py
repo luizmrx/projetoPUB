@@ -616,7 +616,7 @@ def carregar_atribuicao(request):
     RP1TurmaPreview.objects.all().delete()
     RP2TurmaPreview.objects.all().delete()
 
-    erro_leitura = {}
+    mensagens = []
 
     num_turma = 1
     nova_turma = RP1TurmaPreview.objects.create(
@@ -663,7 +663,7 @@ def carregar_atribuicao(request):
             except ObjectDoesNotExist:
                 mensagem = (f"Disciplina {disciplina} não encontrada para o professor: {prof_obj.Apelido}")
                 print(mensagem)
-                erro_leitura[prof_obj.Apelido]= mensagem
+                mensagens.append(mensagem)
                 continue
 
 
@@ -725,9 +725,12 @@ def carregar_atribuicao(request):
 
     verifica_exclusao(ano_atual)
 
-    #return HttpResponseRedirect("/#item-0")
-    #Caso teste:
-    return render(request, "table/menu.html", {"erro_leitura": erro_leitura})
+    mensagens_texto = "\n".join(mensagens)
+    instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
+    instancia.upload_atribuicao = mensagens_texto
+    instancia.save()
+
+    return HttpResponseRedirect("/#item-0")
 
 
 def verifica_exclusao(ano):

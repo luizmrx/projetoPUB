@@ -262,13 +262,22 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
 @login_required
 def menu(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
+    try:
+        msg = RelatoriosPlanilhas.objects.get(id=1).upload_atribuicao
+        msg_upload_atribuicao = msg.split("\n")
+        erro_arquivo=""
+    except:
+        msg_upload_atribuicao = ""
+        erro_arquivo = "Erro ao gerar relatório. Por favor, envie a planilha de atribuição (docentes) novamente."
 
     anos_ant = [i for i in range(2015, ano)]
     context = {
         "anos_ant": anos_ant,
         "anoAberto": ano,
         "sem_tur": turmas_obrigatórias_sem_horario(ano),
-        "falta_aula": menos8_horas_aula_prof(ano)
+        "falta_aula": menos8_horas_aula_prof(ano),
+        "erro_leitura": msg_upload_atribuicao,
+        "erro_arquivo": erro_arquivo,
     }
     return render(request, "table/menu.html", context)
 

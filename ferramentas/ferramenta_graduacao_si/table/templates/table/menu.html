@@ -101,9 +101,9 @@
                         <div id="relatorio" class="form-control" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc;">
                             {% if erro_arquivo %}
                                 <p><span style="color: red;">Atenção:</span> {{erro_arquivo}}</p> 
-                            {% elif  erro_leitura%}
-                                {% for prof, mensagem in erro_leitura.items %}
-                                    {{mensagem}},<br>
+                            {% elif  erro_leitura %}
+                                {% for mensagem in erro_leitura %}
+                                    {{mensagem}}<br>
                                 {% endfor %}
                             {% else %}
                                 Arquivo completamente carregado.

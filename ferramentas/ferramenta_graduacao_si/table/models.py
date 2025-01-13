@@ -293,3 +293,10 @@ class RP2TurmaPreview(models.Model):
 
     class Meta:
         unique_together = (("codigo", "ano"),)
+
+class RelatoriosPlanilhas(models.Model):
+    upload_atribuicao = models.TextField(default="")
+    gerar_atribuicao = models.TextField(default="")
+    upload_preferencias = models.TextField(default="")
+    upload_rp1 = models.TextField(default="")
+    upload_tadi = models.TextField(default="")
