@@ -718,7 +718,9 @@ def carregar_atribuicao(request):
                             SemestreAno=semestre
                         )
                     except:
-                        print(f"{codisc_db}\n NÃO FOI GRAVADA NA 3 vez")
+                        mensagem = (f"{codisc_db} NÃO FOI GRAVADA NA 3 vez")
+                        print(mensagem)
+                        mensagens.append(mensagem)
                         pass
 
             # print("\n")

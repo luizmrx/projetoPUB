@@ -264,7 +264,7 @@ def menu(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
     try:
         msg = RelatoriosPlanilhas.objects.get(id=1).upload_atribuicao
-        msg_upload_atribuicao = msg.split("\n")
+        msg_upload_atribuicao = msg.split("\n") if msg != "" else ""
         erro_arquivo=""
     except:
         msg_upload_atribuicao = ""
