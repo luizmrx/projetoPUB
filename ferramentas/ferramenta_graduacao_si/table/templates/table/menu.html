@@ -91,6 +91,28 @@
                             <input type="submit" class="btn btn-warning mt-3" value="Editar/Visualizar">
                         </form>
                     </div>
+
+                    <!-- Tela de relatório -->
+                    <div id="relatorio-container" class="mt-5">
+
+                        <h4>Relatório do upload da planilha de atribuição (docentes)</h4>
+
+                        <!-- Relatório inserido dinamicamente -->
+                        <div id="relatorio" class="form-control" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc;">
+                            {% if erro_arquivo %}
+                                <p><span style="color: red;">Atenção:</span> {{erro_arquivo}}</p> 
+                            {% elif  erro_leitura%}
+                                {% for prof, mensagem in erro_leitura.items %}
+                                    {{mensagem}},<br>
+                                {% endfor %}
+                            {% else %}
+                                Arquivo completamente carregado.
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
                 </div>
                 
                 <div class="d-none" id="item-3">

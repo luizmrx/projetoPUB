@@ -595,7 +595,7 @@ def carregar_atribuicao(request):
     excel_file = request.FILES.get("excel_file", None)
     if not excel_file:
         return render(
-            request, "table/menu.html", {"error_message": "Nenhum arquivo enviado."}
+            request, "table/menu.html", {"erro_arquivo": "Nenhum arquivo enviado."}
         )
 
     if not excel_file.name.endswith(".xlsx"):
@@ -603,7 +603,7 @@ def carregar_atribuicao(request):
             request,
             "table/menu.html",
             {
-                "error_message": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx."
+                "erro_arquivo": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx."
             },
         )
 
@@ -615,6 +615,8 @@ def carregar_atribuicao(request):
     TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17))).delete()
     RP1TurmaPreview.objects.all().delete()
     RP2TurmaPreview.objects.all().delete()
+
+    erro_leitura = {}
 
     num_turma = 1
     nova_turma = RP1TurmaPreview.objects.create(
@@ -659,7 +661,9 @@ def carregar_atribuicao(request):
                 codisc_db = Disciplina.objects.get(CoDisc=codisc)
 
             except ObjectDoesNotExist:
-                print(f"disciplina {disciplina} não encontrada para o professor: {prof_obj.Apelido}")
+                mensagem = (f"Disciplina {disciplina} não encontrada para o professor: {prof_obj.Apelido}")
+                print(mensagem)
+                erro_leitura[prof_obj.Apelido]= mensagem
                 continue
 
 
@@ -669,7 +673,7 @@ def carregar_atribuicao(request):
                     nova_turma_2_prof.professor_si.add(prof_obj)
                 else:
                     nova_turma.professor_si.add(prof_obj)
-
+            #TADI
             elif codisc == "ACH0021" and num_turma <= 17:
 
                 tadi_turma = TadiTurmaPreview.objects.create(
@@ -680,7 +684,7 @@ def carregar_atribuicao(request):
                 tadi_turma.professor_si.add(prof_obj)
 
                 num_turma += 1
-
+            #RP2
             elif codisc == "ACH0042":
                 if prof_obj in rp2_turma.professor_si.all():
                     rp2_turma_2_prof.professor_si.add(prof_obj)
@@ -721,7 +725,9 @@ def carregar_atribuicao(request):
 
     verifica_exclusao(ano_atual)
 
-    return HttpResponseRedirect("/#item-0")
+    #return HttpResponseRedirect("/#item-0")
+    #Caso teste:
+    return render(request, "table/menu.html", {"erro_leitura": erro_leitura})
 
 
 def verifica_exclusao(ano):
