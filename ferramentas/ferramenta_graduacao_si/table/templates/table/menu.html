@@ -99,10 +99,30 @@
 
                         <!-- Relatório inserido dinamicamente -->
                         <div id="relatorio" class="form-control" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc;">
-                            {% if erro_arquivo %}
-                                <p><span style="color: red;">Atenção:</span> {{erro_arquivo}}</p> 
-                            {% elif  erro_leitura %}
-                                {% for mensagem in erro_leitura %}
+                            {% if erro_pln_atr %}
+                                <p><span style="color: red;">Atenção:</span> {{erro_pln_atr}}</p> 
+                            {% elif  avisos_pln_atr %}
+                                {% for mensagem in avisos_pln_atr %}
+                                    {{mensagem}}<br>
+                                {% endfor %}
+                            {% else %}
+                                Arquivo completamente carregado.
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    <div id="relatorio-container" class="mt-5" style="margin-bottom: 2em;">
+
+                        <h4>Relatório do upload da planilha de preferências</h4>
+
+                        <!-- Relatório inserido dinamicamente -->
+                        <div id="relatorio" class="form-control" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc;">
+                            {% if erro_pln_pref %}
+                                <p><span style="color: red;">Atenção:</span> {{erro_pln_pref}}</p> 
+                            {% elif  avisos_pln_pref %}
+                                {% for mensagem in avisos_pln_pref %}
                                     {{mensagem}}<br>
                                 {% endfor %}
                             {% else %}

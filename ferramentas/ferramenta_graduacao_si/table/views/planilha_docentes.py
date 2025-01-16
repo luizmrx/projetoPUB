@@ -595,7 +595,7 @@ def carregar_atribuicao(request):
     excel_file = request.FILES.get("excel_file", None)
     if not excel_file:
         return render(
-            request, "table/menu.html", {"erro_arquivo": "Nenhum arquivo enviado."}
+            request, "table/menu.html", {"erro_pln_atr": "Nenhum arquivo enviado.", "erro_pln_pref":"Envie algum arquivo da planilha de atribuição."}
         )
 
     if not excel_file.name.endswith(".xlsx"):
@@ -603,136 +603,146 @@ def carregar_atribuicao(request):
             request,
             "table/menu.html",
             {
-                "erro_arquivo": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx."
+                "erro_pln_atr": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx.", "erro_pln_pref":"Envie algum arquivo da planilha de atribuição."
             },
         )
+    
+    try:
 
-    source_workbook = load_workbook(filename=excel_file)
-    sheet_doc = source_workbook["docentes"]
-    profs = Professor.objects.all()
-    ano_atual = AnoAberto.objects.get(id=1).Ano
-    Turma.objects.filter(CodTurma__in=(99, 98, 97), Ano=ano_atual).delete()
-    TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17))).delete()
-    RP1TurmaPreview.objects.all().delete()
-    RP2TurmaPreview.objects.all().delete()
+        source_workbook = load_workbook(filename=excel_file)
+        sheet_doc = source_workbook["docentes"]
+        profs = Professor.objects.all()
+        ano_atual = AnoAberto.objects.get(id=1).Ano
+        Turma.objects.filter(CodTurma__in=(99, 98, 97), Ano=ano_atual).delete()
+        TadiTurmaPreview.objects.filter(codigo__in=(range(1, 17))).delete()
+        RP1TurmaPreview.objects.all().delete()
+        RP2TurmaPreview.objects.all().delete()
 
-    mensagens = []
+        mensagens = []
 
-    num_turma = 1
-    nova_turma = RP1TurmaPreview.objects.create(
-        codigo=99,
-        ano=ano_atual
-    )
-    nova_turma_2_prof = RP1TurmaPreview.objects.create(
-        codigo=98,
-        ano=ano_atual
-    )
+        num_turma = 1
+        nova_turma = RP1TurmaPreview.objects.create(
+            codigo=99,
+            ano=ano_atual
+        )
+        nova_turma_2_prof = RP1TurmaPreview.objects.create(
+            codigo=98,
+            ano=ano_atual
+        )
 
-    rp2_turma = RP2TurmaPreview.objects.create(
-        # Código arbitrário
-        codigo=99,
-        ano=ano_atual
-    )
+        rp2_turma = RP2TurmaPreview.objects.create(
+            # Código arbitrário
+            codigo=99,
+            ano=ano_atual
+        )
 
-    rp2_turma_2_prof = RP2TurmaPreview.objects.create(
-        # Código arbitrário
-        codigo=98,
-        ano=ano_atual
-    )
+        rp2_turma_2_prof = RP2TurmaPreview.objects.create(
+            # Código arbitrário
+            codigo=98,
+            ano=ano_atual
+        )
 
 
-    l_justificativa = ("Extra(s)/Optativa(s)", None, "Afastado", "Compensação de Créditos", "Empréstimo", "Licença-Maternidade","Licença-Prêmio", "Sem Contrato", "Pós-Doutorado")
+        l_justificativa = ("Extra(s)/Optativa(s)", None, "Afastado", "Compensação de Créditos", "Empréstimo", "Licença-Maternidade","Licença-Prêmio", "Sem Contrato", "Pós-Doutorado")
 
-    for row in sheet_doc.iter_rows(min_row=3, max_row=40, max_col=11, values_only=True):
-        if not row[0]:
-            continue
-
-        prof_obj = Professor.objects.get(NomeProf=row[0])
-
-        # cria disciplina para o professor
-        for disciplina in row[1:]:
-            codisc_db = ""
-
-            if disciplina is None or not isinstance(disciplina, str):
+        for row in sheet_doc.iter_rows(min_row=3, max_row=40, max_col=11, values_only=True):
+            if not row[0]:
                 continue
 
-            try:
-                codisc = disciplina.split("-")[0]
-                codisc_db = Disciplina.objects.get(CoDisc=codisc)
+            prof_obj = Professor.objects.get(NomeProf=row[0])
 
-            except ObjectDoesNotExist:
-                mensagem = (f"Disciplina {disciplina} não encontrada para o professor: {prof_obj.Apelido}")
-                print(mensagem)
-                mensagens.append(mensagem)
-                continue
+            # cria disciplina para o professor
+            for disciplina in row[1:]:
+                codisc_db = ""
 
-
-            #RP1
-            if codisc == "ACH0041":
-                if prof_obj in nova_turma.professor_si.all():
-                    nova_turma_2_prof.professor_si.add(prof_obj)
-                else:
-                    nova_turma.professor_si.add(prof_obj)
-            #TADI
-            elif codisc == "ACH0021" and num_turma <= 17:
-
-                tadi_turma = TadiTurmaPreview.objects.create(
-                    codigo=num_turma,
-                    ano=ano_atual
-                )
-
-                tadi_turma.professor_si.add(prof_obj)
-
-                num_turma += 1
-            #RP2
-            elif codisc == "ACH0042":
-                if prof_obj in rp2_turma.professor_si.all():
-                    rp2_turma_2_prof.professor_si.add(prof_obj)
-                else:
-                    rp2_turma.professor_si.add(prof_obj)
-
-            elif not codisc in l_justificativa:
-                semestre = "P" if codisc_db.SemestreIdeal % 2 == 0 else "I"
+                if disciplina is None or not isinstance(disciplina, str):
+                    continue
 
                 try:
-                    n = Turma.objects.create(
-                        CoDisc=codisc_db,
-                        CodTurma=99,
-                        Ano=ano_atual,
-                        NroUSP=prof_obj,
-                        NroAlunos=30,
-                        Eextra='N', #precisa implementar para o sistema reconhecer como extra
-                        semestre_extra=codisc_db.SemestreIdeal,
-                        SemestreAno=semestre
+                    codisc = disciplina.split("-")[0]
+                    codisc_db = Disciplina.objects.get(CoDisc=codisc)
+
+                except ObjectDoesNotExist:
+                    mensagem = (f"Disciplina {disciplina} não encontrada para o professor: {prof_obj.Apelido}")
+                    print(mensagem)
+                    mensagens.append(mensagem)
+                    continue
+
+
+                #RP1
+                if codisc == "ACH0041":
+                    if prof_obj in nova_turma.professor_si.all():
+                        nova_turma_2_prof.professor_si.add(prof_obj)
+                    else:
+                        nova_turma.professor_si.add(prof_obj)
+                #TADI
+                elif codisc == "ACH0021" and num_turma <= 17:
+
+                    tadi_turma = TadiTurmaPreview.objects.create(
+                        codigo=num_turma,
+                        ano=ano_atual
                     )
-                except IntegrityError:
+
+                    tadi_turma.professor_si.add(prof_obj)
+
+                    num_turma += 1
+                #RP2
+                elif codisc == "ACH0042":
+                    if prof_obj in rp2_turma.professor_si.all():
+                        rp2_turma_2_prof.professor_si.add(prof_obj)
+                    else:
+                        rp2_turma.professor_si.add(prof_obj)
+
+                elif not codisc in l_justificativa:
+                    semestre = "P" if codisc_db.SemestreIdeal % 2 == 0 else "I"
+
                     try:
                         n = Turma.objects.create(
                             CoDisc=codisc_db,
-                            CodTurma=98,
+                            CodTurma=99,
                             Ano=ano_atual,
                             NroUSP=prof_obj,
                             NroAlunos=30,
-                            Eextra='N',  # precisa implementar para o sistema reconhecer como extra
+                            Eextra='N', #precisa implementar para o sistema reconhecer como extra
                             semestre_extra=codisc_db.SemestreIdeal,
                             SemestreAno=semestre
                         )
-                    except:
-                        mensagem = (f"{codisc_db} NÃO FOI GRAVADA NA 3 vez")
-                        print(mensagem)
-                        mensagens.append(mensagem)
-                        pass
+                    except IntegrityError:
+                        try:
+                            n = Turma.objects.create(
+                                CoDisc=codisc_db,
+                                CodTurma=98,
+                                Ano=ano_atual,
+                                NroUSP=prof_obj,
+                                NroAlunos=30,
+                                Eextra='N',  # precisa implementar para o sistema reconhecer como extra
+                                semestre_extra=codisc_db.SemestreIdeal,
+                                SemestreAno=semestre
+                            )
+                        except:
+                            mensagem = (f"{codisc_db} NÃO FOI GRAVADA NA 3 vez")
+                            print(mensagem)
+                            mensagens.append(mensagem)
+                            pass
 
-            # print("\n")
+                # print("\n")
 
-    verifica_exclusao(ano_atual)
+        verifica_exclusao(ano_atual)
 
-    mensagens_texto = "\n".join(mensagens)
-    instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
-    instancia.upload_atribuicao = mensagens_texto
-    instancia.save()
+        mensagens_texto = "\n".join(mensagens) if mensagens != "" else "Ok"
+        instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
+        instancia.upload_atribuicao = mensagens_texto
+        instancia.save()
 
-    return HttpResponseRedirect("/#item-0")
+        return HttpResponseRedirect("/#item-0")
+    
+    except Exception as e:
+        print(e)
+        return render(
+            request,
+            "table/menu.html",
+            {"erro_pln_atr": "Ocorreu um erro ao processar o arquivo.", "erro_pln_pref":"Erro de leitura do arquivo upload atribuição (docentes)."},
+        )
 
 
 def verifica_exclusao(ano):

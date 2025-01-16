@@ -263,12 +263,36 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
 def menu(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
     try:
-        msg = RelatoriosPlanilhas.objects.get(id=1).upload_atribuicao
-        msg_upload_atribuicao = msg.split("\n") if msg != "" else ""
-        erro_arquivo=""
+        msg_up_atr = RelatoriosPlanilhas.objects.get(id=1).upload_atribuicao
+        if msg_up_atr == "Ok": #Caso em que o arquivo foi lido e não houve nenhum problema
+            msg_upload_atribuicao = ""
+            erro_pln_atr=""
+        elif msg_up_atr != "": #Caso em que o arquivo foi lido e houve problemas
+            msg_upload_atribuicao = msg_up_atr.split("\n")
+            erro_pln_atr=""
+        else: #Caso em que o arquivo não foi lido
+            msg_upload_atribuicao = ""
+            erro_pln_atr = "Nenhum arquivo enviado."
+        
     except:
         msg_upload_atribuicao = ""
-        erro_arquivo = "Erro ao gerar relatório. Por favor, envie a planilha de atribuição (docentes) novamente."
+        erro_pln_atr = "Erro ao gerar relatório. Por favor, envie a planilha de atribuição (docentes) novamente."
+
+    try:
+        msg_up_pref = RelatoriosPlanilhas.objects.get(id=1).upload_preferencias
+        if msg_up_pref == "Ok": #Caso em que o arquivo foi lido e não houve nenhum problema
+            msg_upload_pref = ""
+            erro_pln_pref=""
+        elif msg_up_pref != "": #Caso em que o arquivo foi lido e houve problemas
+            msg_upload_pref = msg_up_pref.split("\n")
+            erro_pln_pref=""
+        else: #Caso em que o arquivo não foi lido
+            msg_upload_pref = ""
+            erro_pln_pref = "Nenhum arquivo enviado."
+
+    except:
+        msg_upload_pref = ""
+        erro_pln_pref= "Erro ao gerar relatório. Por favor, envie a planilha de preferências novamente."
 
     anos_ant = [i for i in range(2015, ano)]
     context = {
@@ -276,8 +300,10 @@ def menu(request):
         "anoAberto": ano,
         "sem_tur": turmas_obrigatórias_sem_horario(ano),
         "falta_aula": menos8_horas_aula_prof(ano),
-        "erro_leitura": msg_upload_atribuicao,
-        "erro_arquivo": erro_arquivo,
+        "erro_pln_atr": erro_pln_atr,
+        "avisos_pln_atr": msg_upload_atribuicao,
+        "erro_pln_pref":erro_pln_pref,
+        "avisos_pln_pref":msg_upload_pref,
     }
     return render(request, "table/menu.html", context)
 
@@ -480,7 +506,7 @@ def pref_planilha(request):
 
         if not excel_file:
             return render(
-                request, "table/menu.html", {"error_message": "Nenhum arquivo enviado."}
+                request, "table/menu.html", {"erro_pln_pref": "Nenhum arquivo enviado.", "erro_pln_atr":"Envie algum arquivo da planilha de preferências."}
             )
 
         if not excel_file.name.endswith(".xlsx"):
@@ -488,9 +514,11 @@ def pref_planilha(request):
                 request,
                 "table/menu.html",
                 {
-                    "error_message": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx."
+                    "erro_pln_pref": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx.", "erro_pln_atr":"Envie algum arquivo da planilha de preferências."
                 },
             )
+        
+        mensagens = []
 
         try:
             workbook = openpyxl.load_workbook(excel_file)
@@ -516,12 +544,14 @@ def pref_planilha(request):
 
                 # consultar direto o email
                 for prof in profs:
+                    email_professor = email if "@" in email else ""
                     if email == prof.Email:
-                        email_professor = email
                         prof_encontrado = True
 
                 if not prof_encontrado:
-                    print(f"PROFESSOR EMAIL { email_professor } NÃO ENCONTRADO")
+                    mensagem = (f"Professor { email_professor } não encontrado")
+                    print(mensagem)
+                    mensagens.append(mensagem)
                     continue
 
                 semestre_par = True if excel_type == "pref_hro_2" else False
@@ -539,18 +569,21 @@ def pref_planilha(request):
                         justificativaMenos8Horas(professor=prof_db, justificativa="licenca_premio", ano=ano, semestre_ano="I", texto_justificando=row[33]).save()
 
                     if row[34]:
-                        justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc",ano=ano, semestre_ano="P",
-                                                 texto_justificando=row[36]).save()
+                        justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc",ano=ano, semestre_ano="P", texto_justificando=row[36]).save()
                     elif row[35]:
-                        justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc", ano=ano, semestre_ano="I",
-                                                 texto_justificando=row[36]).save()
-
+                        justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc", ano=ano, semestre_ano="I", texto_justificando=row[36]).save()
+                    
                     pref_disc_excel_impar("impar", row, prof_db, header)
                     pref_disc_excel_impar("par", row, prof_db, header)
                     pref_disc_excel_impar("opt", row, prof_db, header)
 
                 prof_db.save()
                 pref_horarios(row, prof_db, semestre_par)
+                
+            mensagens_texto = "\n".join(mensagens) if mensagens != "" else "Ok"
+            instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
+            instancia.upload_preferencias = mensagens_texto
+            instancia.save()
 
             return redirect("ferramenta_graduacao_si:menupage")
 
@@ -559,7 +592,7 @@ def pref_planilha(request):
             return render(
                 request,
                 "table/menu.html",
-                {"error_message": "Ocorreu um erro ao processar o arquivo."},
+                {"erro_pln_pref": "Ocorreu um erro ao processar o arquivo.", "erro_pln_atr":"Erro de leitura do upload das preferências."},
             )
 
 
