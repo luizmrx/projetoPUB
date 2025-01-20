@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 class Meta:
 
@@ -300,3 +302,11 @@ class RelatoriosPlanilhas(models.Model):
     upload_preferencias = models.TextField(default="")
     upload_rp1 = models.TextField(default="")
     upload_tadi = models.TextField(default="")
+
+@receiver(pre_save, sender= AnoAberto)
+def zerarPG(sender, instance, **kwargs):
+    if instance.pk is not None:
+        ano_anterior = AnoAberto.objects.get(pk=instance.pk)
+        if ano_anterior.Ano != instance.Ano:
+            Professor.objects.update(PG_1_semestre=0, PG_2_semestre=0)
+            RelatoriosPlanilhas.objects.update(upload_atribuicao="", gerar_atribuicao="", upload_preferencias="", upload_rp1="", upload_tadi="")
