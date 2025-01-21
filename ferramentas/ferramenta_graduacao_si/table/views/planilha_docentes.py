@@ -728,8 +728,8 @@ def carregar_atribuicao(request):
                 # print("\n")
 
         verifica_exclusao(ano_atual)
-
-        mensagens_texto = "\n".join(mensagens) if mensagens != "" else "Ok"
+        mensagens_texto = "\n".join(mensagens) if mensagens else "Ok"
+        print(mensagens_texto)
         instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
         instancia.upload_atribuicao = mensagens_texto
         instancia.save()
