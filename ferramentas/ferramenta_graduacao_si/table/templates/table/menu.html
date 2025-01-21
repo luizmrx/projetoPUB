@@ -116,22 +116,24 @@
                             <button type="submit" class="btn btn-warning mb-3">Enviar</button>
                         </form>
                     </div>
+                    <!-- Tela de relatório -->
                     <div id="relatorio-container" style="margin: 2em 0;">
 
                         <input type="checkbox" id="botao_pln_pref" style="display: none;">
                         <label for="botao_pln_pref">
                             <h5 style="display: inline-flex;">
-                                Status do upload da planilha de preferências <div><img src="../../static/images/simbolo_ok.png" alt="Símbolo status" style="width: 20px; height: auto; margin-left: 10px;" id="simbolo_status_pln_pref"></div>
+                                Status do upload da planilha de preferências
+                                <span id="status_pln_pref" class="simbolo simbolo__ok"></span>
                             </h5>
                         </label>
 
                         <!-- Relatório inserido dinamicamente -->
-                        <div id="relatorio_pln_pref" class="form-control" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc; display: none;">
+                        <div class="form-control relatorio_pln_pref" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc; display: none;">
                             {% if erro_pln_pref %}
-                                <p id="erro_pln_pref" style="display: none;">erro</p>
+                                <p class="erro_pln_pref" style="display: none;"></p>
                                 <p><span style="color: red;">Atenção:</span> {{erro_pln_pref}}</p> 
                             {% elif  avisos_pln_pref %}
-                                <p id="avisos_pln_pref" style="display: none;">erro</p>
+                                <p class="avisos_pln_pref" style="display: none;"></p>
                                 {% for mensagem in avisos_pln_pref %}
                                     {{mensagem}}<br>
                                 {% endfor %}
@@ -272,7 +274,37 @@
                             {% csrf_token %}
                             <button type="submit" class="btn btn-warning">Gerar</button>
                         </form>
-                        <br>
+
+                    <!-- Tela de relatório -->
+                    <div id="relatorio-container" style="margin: 2em 0;">
+
+                        <input type="checkbox" id="check_atr_auto" style="display: none;">
+                        <label for="check_atr_auto">
+                            <h5 style="display: inline-flex;">
+                                Status da atribuição automática
+                                <span id="status_atr_auto" class="simbolo simbolo__ok"></span>
+                            </h5>
+                        </label>
+                        
+                        
+                        <!-- Relatório inserido dinamicamente --> 
+                        <div id="relatorio_atr_auto" class="form-control relatorio_atr_auto" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc; display: none;">
+                            {% if erro_atr_auto %}
+                                <p class="erro_atr_auto" style="display: none;"></p>
+                                <p><span style="color: red;">Atenção:</span> {{erro_atr_auto}}</p> 
+                            {% elif  avisos_atr_auto %}
+                            <p class="avisos_atr_auto" style="display: none;"></p>
+                                {% for mensagem in avisos_atr_auto %}
+                                    {{mensagem}}<br>
+                                {% endfor %}
+                            {% else %}
+                                Arquivo completamente carregado.
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
                         <hr>
                         <h4>Upload</h4>
                         <ul>
@@ -289,24 +321,25 @@
 
                         <p> Obs: gerencie as mudanças nas justificativas (licença-premio, pós-doc etc) pela área admin</p>
 
-                        <!-- Tela de relatório -->
+                    <!-- Tela de relatório -->
                     <div id="relatorio-container" style="margin: 2em 0;">
 
                         <input type="checkbox" id="botao_pln_atr" style="display: none;">
                         <label for="botao_pln_atr">
                             <h5 style="display: inline-flex;">
-                                Status do upload da planilha de atribuição (docentes) <div><img src="../../static/images/simbolo_ok.png" alt="Símbolo status" style="width: 20px; height: auto; margin-left: 10px;" id="simbolo_status_pln_atr"></div>
+                                Status do upload da planilha de atribuição (docentes) 
+                                <span id="status_pln_atr" class="simbolo simbolo__ok"></span>
                             </h5>
                         </label>
                         
                         
                         <!-- Relatório inserido dinamicamente --> 
-                        <div id="relatorio_pln_atr" class="form-control" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc; display: none;">
+                        <div class="form-control relatorio_pln_atr" style="max-height:  200px; overflow-y: auto; text-align: left; border: 1px solid #ccc; display: none;">
                             {% if erro_pln_atr %}
-                                <p id="erro_pln_atr" style="display: none;">erro</p>
+                                <p class="erro_pln_atr" style="display: none;"></p>
                                 <p><span style="color: red;">Atenção:</span> {{erro_pln_atr}}</p> 
                             {% elif  avisos_pln_atr %}
-                            <p id="avisos_pln_atr" style="display: none;">erro</p>
+                                <p class="avisos_pln_atr" style="display: none;"></p>
                                 {% for mensagem in avisos_pln_atr %}
                                     {{mensagem}}<br>
                                 {% endfor %}
@@ -366,6 +399,15 @@
 
 
 <script>
+
+    function caso_de_erro_pln(erro_pln, aviso_pln, relatorio, status_pln){
+        if(document.querySelector(erro_pln) || document.querySelector(aviso_pln)){
+            document.querySelector(relatorio).style.display = "block";
+            document.getElementById(status_pln).classList.remove('simbolo__ok');
+            document.getElementById(status_pln).classList.add('simbolo__erro');
+        }
+    }
+
     $(document).ready(function() {
        
         $('.controla-menu').click(function(e) {
@@ -376,36 +418,9 @@
         });
     });
 
-    document.addEventListener("DOMContentLoaded", function() {
-        // Obtendo o valor da variável Django a partir do HTML
-        const erro_pln_atr = document.getElementById('erro_pln_atr') ? document.getElementById('erro_pln_atr').innerText : "";
-        const avisos_pln_atr = document.getElementById('avisos_pln_atr') ? document.getElementById('avisos_pln_atr').innerText : "";
-        let simbolo_status_pln_atr = document.getElementById('simbolo_status_pln_atr');
-
-        const erro_pln_pref = document.getElementById('erro_pln_pref') ? document.getElementById('erro_pln_pref').innerText : "";
-        const avisos_pln_pref = document.getElementById('avisos_pln_pref') ? document.getElementById('avisos_pln_pref').innerText : "";
-        let simbolo_status_pln_pref = document.getElementById('simbolo_status_pln_pref');
-        
-        if(erro_pln_atr=="erro" || avisos_pln_atr=="erro" ){
-            document.getElementById('relatorio_pln_atr').style.display = 'block';
-            simbolo_status_pln_atr.src = "../../static/images/simbolo_erro.png";
-        } 
-
-        if(erro_pln_pref=="erro" || avisos_pln_pref=="erro" ){
-            document.getElementById('relatorio_pln_pref').style.display = 'block';
-            simbolo_status_pln_pref.src = "../../static/images/simbolo_erro.png";
-        } 
-    });
-
-    document.getElementById('botao_pln_atr').addEventListener('click', function() {
-        let estilo_relatorio_pln_atr = document.getElementById('relatorio_pln_atr').style;
-        estilo_relatorio_pln_atr.display = estilo_relatorio_pln_atr.display=='none' ? 'block' : 'none';
-    });
-
-    document.getElementById('botao_pln_pref').addEventListener('click', function() {
-        let estilo_relatorio_pln_pref = document.getElementById('relatorio_pln_pref').style;
-        estilo_relatorio_pln_pref.display = estilo_relatorio_pln_pref.display=='none' ? 'block' : 'none';
-    });
+    caso_de_erro_pln('.erro_pln_atr', '.avisos_pln_atr', '.relatorio_pln_atr', 'status_pln_atr');
+    caso_de_erro_pln('.erro_atr_auto', '.avisos_atr_auto', '.relatorio_atr_auto', 'status_atr_auto');
+    caso_de_erro_pln('.erro_pln_pref', '.avisos_pln_pref', '.relatorio_pln_pref', 'status_pln_pref');
 
  </script>
 

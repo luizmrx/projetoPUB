@@ -40,3 +40,21 @@
 .logo {
     width: 30dvw;
 }
+
+.simbolo{
+    display: inline-block;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 20px;
+    height: auto;
+    margin-left: 10px;
+}
+
+.simbolo__ok{
+    background-image: url(../../images/simbolo_ok.png);
+}
+
+.simbolo__erro{
+    background-image: url(../../images/simbolo_erro.png);
+}
