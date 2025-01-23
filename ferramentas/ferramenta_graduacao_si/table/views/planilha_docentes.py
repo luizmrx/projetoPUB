@@ -164,19 +164,23 @@ def criar_atribuicoes(request):
     for i in range(4):
         n_tadi, n_rp1 = cria_atribuicao_profs_sem_pref(ano_atual - i, n_tadi, n_rp1, nova_turma)
 
+    instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
+    instancia.gerar_atribuicao = ""
+    instancia.save()
+
     cria_atribuicoes_obrigatorias(ano_atual)
 
     # As duas funçoes abaixo substituem a imediatamente acima
     # Elas são mais pesadas e tem desempenho pior, para rodar precisa descomentar
     # os códigos do fim desse arquivo
     # cria_atribuicao_com_pref(discs, ano_atual)
-    completa_atrib_obrig_com_hist(discs, ano_atual)
+    completa_atrib_obrig_com_hist(discs, ano_atual)#atenção
 
     cria_atribuicao_com_pref_rp1(nova_turma)
     cria_atribuicao_com_pref_rp2()
 
     cria_atribuicao_com_pref_tadi()
-    completa_atrib_tadi_com_hist(ano_atual)
+    completa_atrib_tadi_com_hist(ano_atual)#atenção
 
     cria_atribuicoes_optativas(ano_atual)
 
@@ -478,6 +482,7 @@ def completa_atrib_tadi_com_hist(ano):
     if num_turmas >= 16:
         return
 
+    mensagens = []
     profs_list = profs_mais_8hrs(disc)
     p_justf = justificativaMenos8Horas.objects.filter(semestre_ano="I").values_list('professor', flat=True).distinct()
 
@@ -505,10 +510,19 @@ def completa_atrib_tadi_com_hist(ano):
             if t_faltando + 1 <= hist.count():
                 t_faltando = t_faltando + 1
             else:
-                print(f"Disciplina {disc.Abreviacao} faltando turmas")
+                mensagem = (f"Faltando turmas para a disciplina {disc.Abreviacao}.")
+                print(mensagem)
+                mensagens.append(mensagem)
+
 
             i = i + 1
 
+    instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
+    msg_anterior = instancia.gerar_atribuicao
+    if msg_anterior: mensagens.append(instancia.gerar_atribuicao)
+    mensagens_texto = "\n".join(mensagens) if mensagens else "Ok"
+    instancia.gerar_atribuicao = mensagens_texto
+    instancia.save()
 
 def cria_atribuicao_profs_sem_pref(ano_atual, num_tadi, num_rp1, rp1_turma):
     profs_sem_pref = Professor.objects.filter(em_atividade=True).exclude(
@@ -729,7 +743,6 @@ def carregar_atribuicao(request):
 
         verifica_exclusao(ano_atual)
         mensagens_texto = "\n".join(mensagens) if mensagens else "Ok"
-        print(mensagens_texto)
         instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
         instancia.upload_atribuicao = mensagens_texto
         instancia.save()
@@ -844,6 +857,7 @@ def remove_rp(rp_preview, rps):
 
 #VERSÃO OBSOLETA ABAIXO +++++++++++=
 def completa_atrib_obrig_com_hist(discs, ano):
+    mensagens = []
     for disc in discs:
         # sem considerar tadi ou rp1 e rp2
         if disc.CoDisc in ("ACH0041", "ACH0021", "ACH0042"):
@@ -912,11 +926,23 @@ def completa_atrib_obrig_com_hist(discs, ano):
                             t_faltando += 1
                         else:
                             print(f"Disciplina {disc.Abreviacao} faltando turmas integridade")
+                            mensagem = (f"Faltando turmas para a disciplina {disc.Abreviacao}")
+                            mensagens.append(mensagem)
 
                         i = i + 1
                 except IndexError:
                     print(f"Disciplina {disc.Abreviacao} faltando turmas index {hist}")
+                    mensagem = (f"Faltando turmas para a disciplina {disc.Abreviacao}")
+                    mensagens.append(mensagem)
+
                     i = t_faltando
+
+    instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
+    msg_anterior = instancia.gerar_atribuicao
+    if msg_anterior: mensagens.append(instancia.gerar_atribuicao)
+    mensagens_texto = "\n".join(mensagens) if mensagens else "Ok"
+    instancia.gerar_atribuicao = mensagens_texto
+    instancia.save()
 
 # def cria_atribuicao_com_pref(discs, ano_atual):
 #

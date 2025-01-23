@@ -259,40 +259,32 @@ def atribuir_tbl_values(tbl, cod_disc, row, col, prof):
     ] = f"{str(cod_disc.CoDisc)} {str(cod_disc.Abreviacao)}"
     tbl[row][col + 1] = prof
 
+def menu_verificacao(pln_upload, tipo):
+    try:
+        if pln_upload=="upload_atribuicao": msg = RelatoriosPlanilhas.objects.get(id=1).upload_atribuicao
+        elif pln_upload=="upload_preferencias":  msg = RelatoriosPlanilhas.objects.get(id=1).upload_preferencias
+        elif pln_upload=="gerar_atribuicao": msg= RelatoriosPlanilhas.objects.get(id=1).gerar_atribuicao
+        
+        if msg == "Ok": #Caso em que o arquivo foi lido e não houve nenhum problema
+            aviso = ""
+            erro=""
+        elif msg!= "": #Caso em que o arquivo foi lido e houve problemas
+            aviso = msg.split("\n")
+            erro=""
+        else: #Caso em que o arquivo não foi lido
+            aviso = ""
+            erro = "Nenhum arquivo enviado."
+        
+    except:
+        aviso = ""
+        erro = "Erro ao gerar relatório. Por favor, envie o arquivo novamente."
+    
+    info = aviso if tipo=="aviso" else erro
+    return info
+
 @login_required
 def menu(request):
     ano = int(AnoAberto.objects.get(id=1).Ano)
-    try:
-        msg_up_atr = RelatoriosPlanilhas.objects.get(id=1).upload_atribuicao
-        if msg_up_atr == "Ok": #Caso em que o arquivo foi lido e não houve nenhum problema
-            msg_upload_atribuicao = ""
-            erro_pln_atr=""
-        elif msg_up_atr != "": #Caso em que o arquivo foi lido e houve problemas
-            msg_upload_atribuicao = msg_up_atr.split("\n")
-            erro_pln_atr=""
-        else: #Caso em que o arquivo não foi lido
-            msg_upload_atribuicao = ""
-            erro_pln_atr = "Nenhum arquivo enviado."
-        
-    except:
-        msg_upload_atribuicao = ""
-        erro_pln_atr = "Erro ao gerar relatório. Por favor, envie a planilha de atribuição (docentes) novamente."
-
-    try:
-        msg_up_pref = RelatoriosPlanilhas.objects.get(id=1).upload_preferencias
-        if msg_up_pref == "Ok": #Caso em que o arquivo foi lido e não houve nenhum problema
-            msg_upload_pref = ""
-            erro_pln_pref=""
-        elif msg_up_pref != "": #Caso em que o arquivo foi lido e houve problemas
-            msg_upload_pref = msg_up_pref.split("\n")
-            erro_pln_pref=""
-        else: #Caso em que o arquivo não foi lido
-            msg_upload_pref = ""
-            erro_pln_pref = "Nenhum arquivo enviado."
-
-    except:
-        msg_upload_pref = ""
-        erro_pln_pref= "Erro ao gerar relatório. Por favor, envie a planilha de preferências novamente."
 
     anos_ant = [i for i in range(2015, ano)]
     context = {
@@ -300,10 +292,12 @@ def menu(request):
         "anoAberto": ano,
         "sem_tur": turmas_obrigatórias_sem_horario(ano),
         "falta_aula": menos8_horas_aula_prof(ano),
-        "erro_pln_atr": erro_pln_atr,
-        "avisos_pln_atr": msg_upload_atribuicao,
-        "erro_pln_pref":erro_pln_pref,
-        "avisos_pln_pref":msg_upload_pref,
+        "erro_pln_atr": menu_verificacao("upload_atribuicao", "erro"),
+        "avisos_pln_atr": menu_verificacao("upload_atribuicao", "aviso"),
+        "erro_pln_pref":menu_verificacao("upload_preferencias", "erro"),
+        "avisos_pln_pref":menu_verificacao("upload_preferencias", "aviso"),
+        "erro_atr_auto": menu_verificacao("gerar_atribuicao", "erro"),
+        "avisos_atr_auto": menu_verificacao("gerar_atribuicao", "aviso"),
     }
     return render(request, "table/menu.html", context)
 
