@@ -10,6 +10,7 @@ def pref_disc_excel_impar(sem, row, prof_db, header):
 
     ano = AnoAberto.objects.get(id=1).Ano
     ini = 18 if sem == "par" else 2
+    mensagens = []
 
     # adaptação
     if sem == "opt":
@@ -24,7 +25,7 @@ def pref_disc_excel_impar(sem, row, prof_db, header):
             value = 1
 
         col_value = header[i]
-        cod_mtr = re.search(r"ACH\d{4}", col_value)
+        cod_mtr = re.search(r"ACH\d{4}", col_value) if col_value is not None else "" # cod_mtr será nulo em casos de testes quando deletar manualmente a matéria
         semestre = 2 if sem == "par" else 1
         try:
             disc_bd = Disciplina.objects.get(CoDisc=cod_mtr.group())
@@ -38,7 +39,16 @@ def pref_disc_excel_impar(sem, row, prof_db, header):
             preferencia.save()
         except Exception as e:
             print(f"ERRO no registro da preferência, todos os códigos de seleção do forms precisam estar no BD. {e}")
-            pass
+            if cod_mtr:
+                mensagem = (f"Erro no registro da preferência, código da disciplina: {cod_mtr.group()}")
+                mensagens.append(mensagem)
+    
+    instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
+    msg_anterior = instancia.upload_preferencias
+    if msg_anterior: mensagens.append(msg_anterior)
+    mensagens_texto = "\n".join(mensagens) if mensagens else ""
+    instancia.upload_preferencias = mensagens_texto
+    instancia.save()
 
 
 def pref_horarios(row, prof_db, semestre_par):
@@ -79,8 +89,8 @@ def pref_horarios(row, prof_db, semestre_par):
 
     dict_imped = {
         "manha": unidecode.unidecode(row[37].lower()) if row[37] else None,
-        "tarde": unidecode.unidecode(row[37].lower()) if row[38] else None,
-        "noite": unidecode.unidecode(row[37].lower()) if row[39] else None
+        "tarde": unidecode.unidecode(row[38].lower()) if row[38] else None,
+        "noite": unidecode.unidecode(row[39].lower()) if row[39] else None
     }
 
     for per, dia in dict_imped.items():

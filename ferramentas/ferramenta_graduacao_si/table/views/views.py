@@ -513,6 +513,9 @@ def pref_planilha(request):
             )
         
         mensagens = []
+        instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
+        instancia.upload_preferencias = ""
+        instancia.save()
 
         try:
             workbook = openpyxl.load_workbook(excel_file)
@@ -567,17 +570,21 @@ def pref_planilha(request):
                     elif row[35]:
                         justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc", ano=ano, semestre_ano="I", texto_justificando=row[36]).save()
                     
+                    # As seguintes funções podem apresentar avisos importantes
                     pref_disc_excel_impar("impar", row, prof_db, header)
                     pref_disc_excel_impar("par", row, prof_db, header)
                     pref_disc_excel_impar("opt", row, prof_db, header)
 
                 prof_db.save()
                 pref_horarios(row, prof_db, semestre_par)
-                
-            mensagens_texto = "\n".join(mensagens) if mensagens != "" else "Ok"
-            instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
-            instancia.upload_preferencias = mensagens_texto
-            instancia.save()
+
+            instancia2, created2 = RelatoriosPlanilhas.objects.get_or_create(id=1)
+            msg_anterior = instancia2.upload_preferencias
+            if msg_anterior: mensagens.append(msg_anterior)
+            mensagens_texto = "\n".join(mensagens) if mensagens else "Ok"
+            print(mensagens_texto)
+            instancia2.upload_preferencias = mensagens_texto
+            instancia2.save()
 
             return redirect("ferramenta_graduacao_si:menupage")
 
