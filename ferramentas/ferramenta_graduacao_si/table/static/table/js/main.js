@@ -157,15 +157,43 @@ $(document).ready(function () {
                 const specialRows = [5, 9, 11];
                 if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
             }
-            
+                   
             if (colIndex % 2 === 0 && cellText !== "" && !isEditable) {
                 cell.find('i.fa').remove();
                 cell.append('<i class="fa fa-clock-o"></i>');
+
+                let lista = $('<ul class="profs-justificativas lista__direita"></ul>');
+
+                const nome__lista = Object.keys(auto_profs).find(chave => auto_profs[chave]===cellText).trim().toLowerCase().normalize("NFD");
+                const valorPosOuLicencaPremio =  dtl_profs[nome__lista][2] != null ? dtl_profs[nome__lista][2] : "";
+                const valorPrefOptativa = dtl_profs[nome__lista][3] != null ? dtl_profs[nome__lista][3] : "";
+                const valorConsideracao = dtl_profs[nome__lista][4] != null ? dtl_profs[nome__lista][4] : "";
+
+                // Em caso de alteração do texto do primeiro item, atualizar o código a partir de $(document).on('click', '.editable td i', function (e)
+                let posOuLicencaPremio = `<li class="profs-justificativas__item">Pós-doc ou licença-prêmio: ${valorPosOuLicencaPremio}</li>`;
+                let prefOptativa = `<li class="profs-justificativas__item">Preferência optativa: ${valorPrefOptativa}</li>`;
+                let consideracao = `<li class="profs-justificativas__item">Consideração: ${valorConsideracao}</li>`;
+    
+                lista.append(posOuLicencaPremio);
+                lista.append(prefOptativa);
+                lista.append(consideracao);
+                cell.append(lista);  // Adiciona a lista à célula
+
+                const listaDimensao = document.querySelector('.profs-justificativas').getBoundingClientRect();
+                const larguraTela = window.innerWidth;
+                console.log("Teste");
+                console.log(listaDimensao.right>larguraTela);
+                if(listaDimensao.right>larguraTela){
+                    console.log("saiu direita");
+                    document.querySelector('.profs-justificativas').classList.replace('lista__direita', 'lista__esquerda');
+                }
+
             }
         }
     }, function () {
         if (!markCells) {
             $(this).find('i').remove();
+            $(this).find('ul').remove();
         }
     });
 
@@ -206,7 +234,9 @@ $(document).ready(function () {
             icon.closest('table').find('td').removeClass('red-impedimento');
             // Adiciona a classe 'red-transparent' a células
             const cells = icon.closest('table').find('td');
-            const apelido = icon.parent().text().trim();
+            const apelidoComInformacoes = icon.parent().text().trim();
+            // Caso a primeira parte da lista (pop-up de informações do prof quando o mouse está em cima) seja trocada, mudar a parte do split correspondente. Isso ocorre porque está capturando toda a informação escrita, incluindo a lista.
+            const apelido = apelidoComInformacoes.split("Pós-doc")[0].trim();
             let indexes = getCellIndexes(apelido)[0];
             let indexes_imp = getCellIndexes(apelido)[1]
             
@@ -252,7 +282,7 @@ $(document).ready(function () {
                 
             }
             
-        } else {
+        } else { 
             icon.removeClass('fa-check-circle').addClass('fa-clock-o');
             icon.closest('table').find('td').removeClass('red-transparent');
             icon.closest('table').find('td').removeClass('red-impedimento');
@@ -343,6 +373,7 @@ const editable = {
         $('#checkRestricaoHro').prop('checked', false);
         // Remove ícone presente na célula
         $(cell).closest('table').find('i').remove();
+        $(cell).closest('table').find('ul').remove();
         
         // Remove a classe 'red-transparent' das células marcadas
         if(transparent){
@@ -508,7 +539,7 @@ const editable = {
     // (C) END "EDIT MODE"
     close: evt => {
         if (evt.target !== editable.selected) {
-            let valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').trim();
+            let valueUser = $(editable.selected).html().replace(/&nbsp;/g, '').replace(/<br>/g, '').replace(/<ul[\s\S]*?<\/ul>/g, '').trim();
             const col = editable.colIndex;
             const row = editable.rowIndex;
             let caso_update = false;

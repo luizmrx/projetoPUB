@@ -14,7 +14,8 @@
     border-radius: 4px;
     padding: 8px;
     font-size: 14px;
-    box-shadow: 0 2px 4px rborder-color: gba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px ;
+    border-color: gba(0, 0, 0, 0.1);
 }
 
 .custom-border td {
@@ -114,3 +115,34 @@
     background-color: green;
 } */
 
+
+.bloco-linha{
+    position: relative;;
+}
+
+.profs-justificativas{
+    position: absolute;
+    min-width: 300px;
+    max-width: 400px;
+    background-color: white;
+    list-style-type: none;
+    padding: 2% 10%;
+    text-align: left;
+    color: black;
+    border: 2px solid gray;
+    border-radius: 10px;
+    overflow: auto;
+    z-index: 10;
+}
+
+.profs-justificativas__item{
+    margin: 5% 0%;
+}
+
+.lista__direita{
+    left: 100%;
+}
+
+.lista__esquerda{
+    right: 100%;
+}

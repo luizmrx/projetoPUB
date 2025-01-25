@@ -218,17 +218,25 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr> 
                     <th scope="row" class="align-middle text-center" >Matutino 1 8:00-09:45h</th>
                     {%for i in tProfs.0 %}
-                    <td class="align-middle text-center">{{i}}</td>
+                    <td class="align-middle text-center bloco-linha">
+                        {% if i %}
+                        {{i}}
+                        {% endif %}
+                    </td>
                     {%endfor%}
                     <td rowspan="2" class="align-middle text-center">02</td>
                 </tr>
                 <tr>
                     <th scope="row" class="align-middle text-center">Matutino 2 10:15-12:00h</th>
                     {%for i in tProfs.1%}
-                    <td class="align-middle text-center">{{i}}</td>
+                    <td class="align-middle text-center bloco-linha">
+                        {% if i %}
+                        {{i}}
+                        {% endif %}
+                    </td>
                     {%endfor%}
                     <td style="display:none;">02</td>
                 </tr>
@@ -236,22 +244,26 @@
                 <tr>
                     <th scope="row" rowspan="2" class="align-middle text-center">Vespertino 1 14:00 - 15:45h</th>
                     <td class="align-middle text-center">{{tProfs.2.0}}</td>
-                    <td class="align-middle text-center">{{tProfs.2.1}}</td>
+                    <td class="align-middle text-center bloco-linha">{{tProfs.2.1}}</td>
                     {%for vl in tProfs.2%}
                         {% if forloop.counter0 > 1 %}
-                        <td rowspan="2" class="align-middle text-center">{{vl}}</td>    
+                        <td rowspan="2" class="align-middle text-center bloco-linha">{{vl}}</td>    
                         {%endif%}
                     {%endfor%}
                     <td style="display:none;">3</td>
                 </tr>
                 <tr class="custom-border">
                     <td class="align-middle text-center">{{tProfs.3.0}}</td>
-                    <td class="align-middle text-center">{{tProfs.3.1}}</td>
+                    <td class="align-middle text-center bloco-linha">{{tProfs.3.1}}</td>
                 </tr>
                 <tr>
                     <th scope="row" class="align-middle text-center">Vespertino 2 16:15-18:00h</th>
                     {%for i in tProfs.4%}
-                    <td class="align-middle text-center">{{i}}</td>
+                    <td class="align-middle text-center bloco-linha">
+                        {% if i %}
+                        {{i}}
+                        {% endif %}
+                    </td>
                     {%endfor%}
                     <td style="display:none;">3</td>
                 </tr>
@@ -259,26 +271,42 @@
                 <tr>
                     <th scope="row" rowspan="2" class="align-middle text-center">Noturno 1 19:00 - 20:45h</th>
                     {%for i in tProfs.5%}
-                    <td class="align-middle text-center">{{i}}</td>
+                    <td class="align-middle text-center bloco-linha">
+                        {% if i %}
+                        {{i}}
+                        {% endif %}
+                    </td>
                     {%endfor%}
                     <td class="align-middle text-center">04</td>
                 </tr>
                 <tr class="custom-border">
                     {%for i in tProfs.6%}
-                    <td class="align-middle text-center ">{{i}}</td>
+                    <td class="align-middle text-center bloco-linha">
+                        {% if i %}
+                        {{i}}
+                        {% endif %}
+                    </td>
                     {%endfor%}
                     <td class="align-middle text-center">94</td>
                 </tr>
                 <tr>
                     <th scope="row" rowspan="2" class="align-middle text-center">Noturno 2 21:00 - 22:45h</th>
                     {%for i in tProfs.7%}
-                    <td class="align-middle text-center">{{i}}</td>
+                    <td class="align-middle text-center bloco-linha">
+                        {% if i %}
+                        {{i}}
+                        {% endif %}
+                    </td>
                     {%endfor%}
-                    <td class="align-middle text-center">04</td>
+                    <td class="align-middle text-center bloco-linha">04</td>
                 </tr>
                 <tr class="custom-border">
                     {%for i in tProfs.8%}
-                    <td class="align-middle text-center">{{i}}</td>
+                    <td class="align-middle text-center bloco-linha">
+                        {% if i %}
+                        {{i}}
+                        {% endif %}
+                    </td>
                     {%endfor%}
                     <td class="align-middle text-center">94</td>
                 </tr>
