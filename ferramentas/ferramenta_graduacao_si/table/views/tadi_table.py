@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import redirect
-
+import unicodedata
 from .planilha_docentes import *
 from .salvar_modificacoes import *
 from .preferencias_upload import *
@@ -25,7 +25,9 @@ def page_tadi(request, text=""):
 
     tadi_turmas = TadiTurma.objects.filter(ano=AnoAberto.objects.get(id=1).Ano).order_by(ordering)
     turmas_tadi = TadiTurmaPreview.objects.all()
+    profs_objs = Professor.objects.all()
     auto_profs = {}
+    detalhes_profs = {}
     for turma in turmas_tadi:
         # considerando que só haja uma professor por turma
         prof_obj = turma.professor_si.all().first()
@@ -49,6 +51,11 @@ def page_tadi(request, text=""):
         if rest["impedimento"]:
             profs_impedimento.append(prof_bd.Apelido)
 
+    for prof_obj in profs_objs:
+        nome = remover_acentos(prof_obj.NomeProf.lower())
+        detalhes_profs[nome] = [prof_obj.NomeProf, prof_obj.Apelido, prof_obj.pos_doc, prof_obj.pref_optativas,
+                                prof_obj.consideracao1, prof_obj.consideracao2]
+
     print(profs_nao_gosta)
     ano_aberto = AnoAberto.objects.get(id=1).Ano
     context = {
@@ -57,10 +64,16 @@ def page_tadi(request, text=""):
         "text_erro": text,
         "anoAberto": ano_aberto,
         "profs_impedimento": profs_impedimento,
-        "profs_nao_gosta": profs_nao_gosta
+        "profs_nao_gosta": profs_nao_gosta,
+        "detalhes_profs": detalhes_profs,
     }
     return render(request, "table/tadiTable.html", context)
 
+def remover_acentos(texto):
+    # Normaliza o texto para decompor caracteres acentuados
+    nfkd = unicodedata.normalize('NFD', texto)
+    # Remove os caracteres diacríticos (acentos)
+    return ''.join([c for c in nfkd if unicodedata.category(c) != 'Mn'])
 
 @login_required
 def load_tadi(request):

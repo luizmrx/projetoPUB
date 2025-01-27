@@ -26,6 +26,7 @@
     {{ auto_profs|json_script:"auto_profs"}}
     {{ profs_impedimento|json_script:"profs_impedimento"}}
     {{ profs_nao_gosta|json_script:"profs_nao_gosta"}}
+    {{ detalhes_profs|json_script:"dtl_profs" }}
     
     <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
     <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
@@ -146,7 +147,7 @@
                     <td>{{ query.curso }}
 
                     <td class="d-none .id">{{query.id}}</td>
-                    <td class="si_profs">
+                    <td class="si_profs bloco-linha">
                     {% for p in query.professor_si.all%}
                         {{p.Apelido}}    
                     {% endfor%}

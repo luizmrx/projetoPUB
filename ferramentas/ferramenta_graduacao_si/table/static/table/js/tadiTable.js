@@ -2,6 +2,7 @@
 let auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
 const profs_impedimento = JSON.parse(document.getElementById("profs_impedimento").textContent);
 const profs_nao_gosta = JSON.parse(document.getElementById("profs_nao_gosta").textContent);
+const dtl_profs = JSON.parse(document.getElementById("dtl_profs").textContent);
 
 function openModal(title, messages) {
     const modalBody = document.getElementById("modalBody");
@@ -27,6 +28,30 @@ $(document).ready(function() {
     // Remove a classe .si_profs de todas as células
     $('.si_profs').removeClass('si_profs');
 
+    $(".bloco-linha").mouseover(function() {
+        
+        let lista = $('<ul class="profs-justificativas lista__tadi"></ul>');
+        let nome__lista = $(this).closest('tr').find('.n_completo').text().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        const valorPosOuLicencaPremio =  dtl_profs[nome__lista][2] != null ? dtl_profs[nome__lista][2] : "";
+        const valorPrefOptativa = dtl_profs[nome__lista][3] != null ? dtl_profs[nome__lista][3] : "";
+        const valorConsideracao = dtl_profs[nome__lista][4] != null ? dtl_profs[nome__lista][4] : "";
+
+        let posOuLicencaPremio = `<li class="profs-justificativas__item">Pós-doc ou licença-prêmio: ${valorPosOuLicencaPremio}</li>`;
+        let prefOptativa = `<li class="profs-justificativas__item">Preferência optativa: ${valorPrefOptativa}</li>`;
+        let consideracao = `<li class="profs-justificativas__item">Consideração: ${valorConsideracao}</li>`;
+
+        lista.append(posOuLicencaPremio);
+        lista.append(prefOptativa);
+        lista.append(consideracao);
+
+        $(this).append(lista);
+
+    });
+
+    $(".bloco-linha").mouseout(function() {
+        $(this).find('ul').remove();
+    });
 
     $(".icone").mouseover(function() {
         $(this).css("color", "blue");
