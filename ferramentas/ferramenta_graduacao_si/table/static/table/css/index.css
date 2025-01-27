@@ -147,6 +147,10 @@
     right: 100%;
 }
 
-.lista__tadi{
+.lista__tadi__baixo{
     top: 100%;
+}
+
+.lista__tadi__cima{
+    bottom: 100%;
 }

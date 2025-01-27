@@ -181,10 +181,7 @@ $(document).ready(function () {
 
                 const listaDimensao = document.querySelector('.profs-justificativas').getBoundingClientRect();
                 const larguraTela = window.innerWidth;
-                console.log("Teste");
-                console.log(listaDimensao.right>larguraTela);
                 if(listaDimensao.right>larguraTela){
-                    console.log("saiu direita");
                     document.querySelector('.profs-justificativas').classList.replace('lista__direita', 'lista__esquerda');
                 }
 

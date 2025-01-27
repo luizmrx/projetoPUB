@@ -30,7 +30,7 @@ $(document).ready(function() {
 
     $(".bloco-linha").mouseover(function() {
         
-        let lista = $('<ul class="profs-justificativas lista__tadi"></ul>');
+        let lista = $('<ul class="profs-justificativas lista__tadi__baixo"></ul>');
         let nome__lista = $(this).closest('tr').find('.n_completo').text().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         const valorPosOuLicencaPremio =  dtl_profs[nome__lista][2] != null ? dtl_profs[nome__lista][2] : "";
@@ -46,6 +46,12 @@ $(document).ready(function() {
         lista.append(consideracao);
 
         $(this).append(lista);
+
+        const listaDimensao = document.querySelector('.profs-justificativas').getBoundingClientRect();
+        const alturaTela = window.innerHeight;
+        if(listaDimensao.bottom>alturaTela){
+            document.querySelector('.profs-justificativas').classList.replace('lista__tadi__baixo', 'lista__tadi__cima');
+        }
 
     });
 
