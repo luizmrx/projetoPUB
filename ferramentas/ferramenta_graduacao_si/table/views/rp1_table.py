@@ -7,6 +7,8 @@ from django.shortcuts import render
 from ..models import *
 from django.shortcuts import redirect
 
+import unicodedata
+
 from .planilha_distribuicao import *
 from .planilha_docentes import *
 from .salvar_modificacoes import *
@@ -69,9 +71,14 @@ def page_rp1(request, text=""):
     auto_profs = {}
     restricoes_profs = {}
     impedimentos_totais = {}
+    detalhes_profs = {}
     for prof_obj in profs_objs:
         auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
         restricoes = prof_obj.restricao_set.filter(semestre="1")
+
+        nome = remover_acentos(prof_obj.NomeProf.lower())
+        detalhes_profs[nome] = [prof_obj.NomeProf, prof_obj.Apelido, prof_obj.pos_doc, prof_obj.pref_optativas,
+                                prof_obj.consideracao1, prof_obj.consideracao2]
 
         restricoes_profs[str(prof_obj.Apelido)] = []
         impedimentos_totais[str(prof_obj.Apelido)] = []
@@ -118,9 +125,16 @@ def page_rp1(request, text=""):
         "text_erro": text,
         "anoAberto": ano_aberto,
         "impedimentos_totais": impedimentos_totais,
-        "rest_horarios": restricoes_profs
+        "rest_horarios": restricoes_profs,
+        "detalhes_profs": detalhes_profs,
     }
     return render(request, "table/rp1Table.html", context)
+ 
+def remover_acentos(texto):
+    # Normaliza o texto para decompor caracteres acentuados
+    nfkd = unicodedata.normalize('NFD', texto)
+    # Remove os caracteres diacríticos (acentos)
+    return ''.join([c for c in nfkd if unicodedata.category(c) != 'Mn'])
 
 def prof_na_restricao(tur, restricoes):
     impedimento = False

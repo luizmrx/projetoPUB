@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
+ 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -25,6 +25,7 @@
     <script type="module" src="{% static 'table/js/rp1Table.js' %}"></script>
     {{ auto_profs|json_script:"auto_profs"}}
     {{ total_profs|json_script:"total_profs"}}
+    {{ detalhes_profs|json_script:"dtl_profs" }}
     
     <link rel="stylesheet" href="{% static 'table/css/index.css' %}">
     <link rel="stylesheet" href="{% static 'table/css/styles.css' %}">
@@ -159,7 +160,7 @@
                     <td>{{ query.cursos }}
                     <td>{{ query.profs_adicionais }}</td>
                     <td class="d-none .id">{{query.id}}</td>
-                    <td class="si_profs">
+                    <td class="si_profs bloco-linha">
                     {% for p in query.professor_si.all%}
                         {{p.Apelido}},    
                     {% endfor%}

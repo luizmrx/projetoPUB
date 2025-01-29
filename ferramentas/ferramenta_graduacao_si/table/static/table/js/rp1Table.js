@@ -1,6 +1,7 @@
 
 let auto_profs = JSON.parse(document.getElementById("auto_profs").textContent);
 let total_profs = JSON.parse(document.getElementById("total_profs").textContent);
+const dtl_profs = JSON.parse(document.getElementById("dtl_profs").textContent);
 const restricos_hro = JSON.parse(document.getElementById("rest").textContent);
 const impedimentos_totais = JSON.parse(document.getElementById("impedimentos_totais").textContent);
 
@@ -28,6 +29,63 @@ $(document).ready(function() {
         $(this).css("color", "");
     });
 
+    function adicionar_na_lista_dinamica(lista, nome__lista, dtl_profs){
+
+        if(nome__lista){
+
+            const valorPosOuLicencaPremio =  dtl_profs[nome__lista][2] != null ? dtl_profs[nome__lista][2] : "";
+            const valorPrefOptativa = dtl_profs[nome__lista][3] != null ? dtl_profs[nome__lista][3] : "";
+            const valorConsideracao = dtl_profs[nome__lista][4] != null ? dtl_profs[nome__lista][4] : "";
+
+            let nome__prof = (`<h6 class="prof__rp">${dtl_profs[nome__lista][0]}:</h6>`)
+            let posOuLicencaPremio = (`<li class="profs-justificativas__item">Pós-doc ou licença-prêmio: ${valorPosOuLicencaPremio}</li>`);
+            let prefOptativa = (`<li class="profs-justificativas__item">Preferência optativa: ${valorPrefOptativa}</li>`);
+            let consideracao = (`<li class="profs-justificativas__item">Consideração: ${valorConsideracao}</li>`);
+
+            lista += nome__prof + posOuLicencaPremio + prefOptativa + consideracao;
+
+        }
+
+        return lista;
+
+    }
+
+    $(".bloco-linha").mouseover(function() {
+
+        if(!$(this).find('ul').length){
+
+            let lista = ('<ul class="profs-justificativas lista__rp1__baixo">');
+            let lista__final = ('</ul>');
+            let nome__lista = [];
+            nome__lista[0] = $(this).closest('tr').find('.n_completo').eq(0).text().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            nome__lista[1] = $(this).closest('tr').find('.n_completo').eq(1).text().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            nome__lista[2] = $(this).closest('tr').find('.n_completo').eq(2).text().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            nome__lista[0] = nome__lista[0]!=null ? nome__lista[0]:null
+            nome__lista[1] = nome__lista[1]!=null  ? nome__lista[1]:null
+            nome__lista[2] = nome__lista[2]!=null  ? nome__lista[2]:null
+
+            lista = adicionar_na_lista_dinamica(lista, nome__lista[0], dtl_profs);
+            lista = adicionar_na_lista_dinamica(lista, nome__lista[1], dtl_profs);
+            lista = adicionar_na_lista_dinamica(lista, nome__lista[2], dtl_profs);
+            lista += lista__final;
+
+
+            if(lista.includes("</li>")) {
+                $(this).append(lista);
+
+                const posicaoBlocoLinha = parseInt($(this).offset().top, 10);
+                const alturaTela = parseInt($(window).height());
+
+                if((posicaoBlocoLinha + 450)>alturaTela){
+                    $(this).closest('tr').find('.profs-justificativas').removeClass('lista__rp1__baixo').addClass('lista__rp1__cima');
+                }
+
+            }  
+        }
+        
+    });
+    
     //Abre popUp
     $(document).on('click', '.icone', function (e) {              
         const cell = $(this).closest('td');
@@ -174,7 +232,7 @@ $(document).ready(function() {
                 // break;
             }               
         }
-
+ 
         let prof_hr_err = false;
         if(validInput){
             const myEvent = { 
@@ -319,7 +377,7 @@ function coresRestrições() {
                 if(apelido[0] == " ") apelido = apelido.substring(1)
                 
                 if(arrayCompare(getCellIndexes(apelido)[0], correspondencia[turma]) == correspondencia[turma].length) {
-                    console.log(cells_profs.eq(i))
+                    //console.log(cells_profs.eq(i))
                     cells_profs.eq(i).addClass("prof-na-restricão")
                 }
                 if(arrayCompare(getCellIndexes(apelido)[1], correspondencia[turma]) == correspondencia[turma].length) {

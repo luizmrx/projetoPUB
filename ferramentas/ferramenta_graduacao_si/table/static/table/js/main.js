@@ -16,8 +16,6 @@ export function setCodMtr(new_value) {
 }
 
 // const turmas_rp = JSON.parse(document.getElementById("turmas_rp").textContent);
-console.log(restricos_hro)
-console.log(impedimentos_totais)
 
 // importando os módulos
 import { save_edition } from "./modules/crud_turmas.js";

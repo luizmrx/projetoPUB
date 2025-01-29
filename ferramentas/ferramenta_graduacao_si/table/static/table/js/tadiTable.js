@@ -30,27 +30,28 @@ $(document).ready(function() {
 
     $(".bloco-linha").mouseover(function() {
         
-        let lista = $('<ul class="profs-justificativas lista__tadi__baixo"></ul>');
+        let lista = ('<ul class="profs-justificativas lista__tadi__baixo">');
+        let lista__final = ('</ul>');
         let nome__lista = $(this).closest('tr').find('.n_completo').text().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-        const valorPosOuLicencaPremio =  dtl_profs[nome__lista][2] != null ? dtl_profs[nome__lista][2] : "";
-        const valorPrefOptativa = dtl_profs[nome__lista][3] != null ? dtl_profs[nome__lista][3] : "";
-        const valorConsideracao = dtl_profs[nome__lista][4] != null ? dtl_profs[nome__lista][4] : "";
+        if(nome__lista){
+            const valorPosOuLicencaPremio =  dtl_profs[nome__lista][2] != null ? dtl_profs[nome__lista][2] : "";
+            const valorPrefOptativa = dtl_profs[nome__lista][3] != null ? dtl_profs[nome__lista][3] : "";
+            const valorConsideracao = dtl_profs[nome__lista][4] != null ? dtl_profs[nome__lista][4] : "";
 
-        let posOuLicencaPremio = `<li class="profs-justificativas__item">Pós-doc ou licença-prêmio: ${valorPosOuLicencaPremio}</li>`;
-        let prefOptativa = `<li class="profs-justificativas__item">Preferência optativa: ${valorPrefOptativa}</li>`;
-        let consideracao = `<li class="profs-justificativas__item">Consideração: ${valorConsideracao}</li>`;
+            let posOuLicencaPremio = (`<li class="profs-justificativas__item">Pós-doc ou licença-prêmio: ${valorPosOuLicencaPremio}</li>`);
+            let prefOptativa = (`<li class="profs-justificativas__item">Preferência optativa: ${valorPrefOptativa}</li>`);
+            let consideracao = (`<li class="profs-justificativas__item">Consideração: ${valorConsideracao}</li>`);
 
-        lista.append(posOuLicencaPremio);
-        lista.append(prefOptativa);
-        lista.append(consideracao);
+            lista += posOuLicencaPremio + prefOptativa + consideracao + lista__final;
 
-        $(this).append(lista);
+            $(this).append(lista);
 
-        const listaDimensao = document.querySelector('.profs-justificativas').getBoundingClientRect();
-        const alturaTela = window.innerHeight;
-        if(listaDimensao.bottom>alturaTela){
-            document.querySelector('.profs-justificativas').classList.replace('lista__tadi__baixo', 'lista__tadi__cima');
+            const listaDimensao = document.querySelector('.profs-justificativas').getBoundingClientRect();
+            const alturaTela = window.innerHeight;
+            if(listaDimensao.bottom>alturaTela){
+                document.querySelector('.profs-justificativas').classList.replace('lista__tadi__baixo', 'lista__tadi__cima');
+            }
         }
 
     });
