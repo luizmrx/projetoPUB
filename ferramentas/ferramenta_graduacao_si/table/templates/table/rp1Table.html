@@ -162,7 +162,8 @@
                     <td class="d-none .id">{{query.id}}</td>
                     <td class="si_profs bloco-linha">
                     {% for p in query.professor_si.all%}
-                        {{p.Apelido}},    
+                        <span class="prof_rp1_apelido">{{p.Apelido}}</span>
+                        {% if not forloop.last %},{% endif %}
                     {% endfor%}
                     </td>
                     <td class="align-middle text-center" style="font-size: 2em;">

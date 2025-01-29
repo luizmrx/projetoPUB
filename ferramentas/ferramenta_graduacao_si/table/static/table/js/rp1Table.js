@@ -369,22 +369,29 @@ function coresRestrições() {
     let cells_turmas = $('.codigo');
     
     for(let i = 0; i < 15; i++) {
-        let conteudoCelulaProfs = cells_profs.eq(i)[0].innerText.split(",");
-        let turma = cells_turmas.eq(i)[0].innerText
-        conteudoCelulaProfs.forEach((apelido) => {
 
-            if(apelido) {
-                if(apelido[0] == " ") apelido = apelido.substring(1)
+        let conteudoCelulaProfs = cells_profs.eq(i).find('.prof_rp1_apelido');
+        
+        if(conteudoCelulaProfs.length){
+            console.log(i);
+            console.log(conteudoCelulaProfs);
+            let turma = cells_turmas.eq(i)[0].innerText;
+            conteudoCelulaProfs.each((index, apelido) => {
+                console.log(apelido);
+                console.log(apelido.innerText);
+                console.log(correspondencia[turma]);
                 
-                if(arrayCompare(getCellIndexes(apelido)[0], correspondencia[turma]) == correspondencia[turma].length) {
-                    //console.log(cells_profs.eq(i))
-                    cells_profs.eq(i).addClass("prof-na-restricão")
+                if(arrayCompare(getCellIndexes(apelido.innerText)[0], correspondencia[turma]) == correspondencia[turma].length) {
+        
+                    $(apelido).addClass("prof-na-restricão");
+                    
                 }
-                if(arrayCompare(getCellIndexes(apelido)[1], correspondencia[turma]) == correspondencia[turma].length) {
-                    cells_profs.eq(i).addClass("prof-no-impedimento")
+                if(arrayCompare(getCellIndexes(apelido.innerText)[1], correspondencia[turma]) == correspondencia[turma].length) {
+                   
+                    $(apelido).addClass("prof-no-impedimento");
+                    
                 }
-                
-            }
-        })
+            });
+        }
     }
 };
