@@ -43,8 +43,17 @@ def update_prof(inf, year, smt):
         turma_db.CoDisc = disc
         turma_db.save()
         return turma_db
+
+
+    except IntegrityError as e:
+        if "Duplicate entry" in str(e):
+            print("Erro: Chave duplicada. O valor já existe.")
+            return ("Chave duplicada")
+        else:
+            print(f"Erro: {e}")
+
     except:
-    #     print("except do update_prof")
+        print("except do update_prof")
         pass
 
 
@@ -71,7 +80,7 @@ def update_cod(data, year, erros, smt, ind_modif):
     deletar_valor(data, year, erros)
     turma_obj = cadastrar_turma(inf, year, smt)
     update_prof(inf, year, data["semestre"])
-    atualizar_dia(turma_obj, inf, year, erros, smt, ind_modif)
+    atualizar_dia(turma_obj, inf, year, erros, smt, ind_modif, "n")
 
 
 def deletar_valor(data, year, erros):
@@ -213,7 +222,7 @@ def cadastrar_dia(turma_db, turma_user):
     dia_materia.Turmas.add(turma_db)
 
 
-def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif):
+def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif, update):
     smt_ano = "I" if smt % 2 else "P"
 
     extra = "N"
@@ -229,7 +238,7 @@ def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif):
 
     indice_tbl_update(turma_db, ind_modif, turma)
 
-    if extrapola_creditos(turma_db):
+    if extrapola_creditos(turma_db, update):
         erros["credito"] = f"Matéria {turma['cod_disc']} e código de turma {turma['cod_turma']} extrapola o número de créditos-aula\n"
         return False
     
@@ -240,7 +249,7 @@ def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif):
     return True
     
 
-def extrapola_creditos(turma_db):
+def extrapola_creditos(turma_db, update):
     #Note que toda vez que iniciamos uma disciplina, também iniciamos uma turma. Porém, podemos ter a mesma disciplina diversas vezes ao longo da semana e o sistema não perceberá o erro. Para arrumar esse erro, verificamos se existe mais de uma turma no sistema. Em caso positivo, o get irá gerar um erro e o extrapola_creditos retornará True
 
     Ano = turma_db.Ano
@@ -260,8 +269,11 @@ def extrapola_creditos(turma_db):
     creditos_disc = turma_db.CoDisc.CreditosAula
     num_hrs = turma_db.dia_set.all().count()
    
-    if (creditos_disc == 4 and num_hrs == 2) or \
-       (creditos_disc == 2 and num_hrs == 1):
+    if ((creditos_disc == 4 and num_hrs == 2) or (creditos_disc == 2 and num_hrs == 1)) and update=="n":
+        print(creditos_disc)
+        return True
+    if ((creditos_disc == 4 and num_hrs > 2) or (creditos_disc == 2 and num_hrs > 1)) and update=="s":
+        print(creditos_disc)
         return True
    
 

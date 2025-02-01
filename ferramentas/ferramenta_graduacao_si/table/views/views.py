@@ -264,7 +264,7 @@ def menu_verificacao(pln_upload, tipo):
         if pln_upload=="upload_atribuicao": msg = RelatoriosPlanilhas.objects.get(id=1).upload_atribuicao
         elif pln_upload=="upload_preferencias":  msg = RelatoriosPlanilhas.objects.get(id=1).upload_preferencias
         elif pln_upload=="gerar_atribuicao": msg= RelatoriosPlanilhas.objects.get(id=1).gerar_atribuicao
-        
+
         if msg == "Ok": #Caso em que o arquivo foi lido e não houve nenhum problema
             aviso = ""
             erro=""
@@ -278,7 +278,7 @@ def menu_verificacao(pln_upload, tipo):
     except:
         aviso = ""
         erro = "Erro ao gerar relatório. Por favor, envie o arquivo novamente."
-    
+        
     info = aviso if tipo=="aviso" else erro
     return info
 
@@ -314,7 +314,7 @@ def turmas_obrigatórias_sem_horario(ano):
 
         if not turma02:
             result_string = result_string + "02"
-            
+
         if not turma04:
             if result_string == "":
                 result_string = result_string + "04"
@@ -410,7 +410,7 @@ def save_modify(request):
         
             turma_obj = cadastrar_turma(info_par, ano, data["semestre"])
             update_prof(info_par, ano, data["semestre"])
-            if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif):
+            if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif, "n"):
                 try:
                     print("Deletando turma cadastrada")
                     turma_obj.delete()
@@ -425,9 +425,20 @@ def save_modify(request):
             aula_noite_outro_dia_manha(data, alertas, ano)
 
             if not aula_msm_horario(info_par, ano, data, erros):
-                    
-                    turma_obj = update_prof(info_par, ano, data["semestre"])
+
+                turma_obj = update_prof(info_par, ano, data["semestre"])
+                if(turma_obj != "Chave duplicada"): 
                     indice_tbl_update(turma_obj, ind_modif, info_par)
+                    if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif, "s"):
+                        try:
+                            print("Deletando turma cadastrada")
+                            turma_obj.delete()
+                            print("Funcionou")
+                        except:
+                            pass
+                else:
+                    print(info_par)
+                    erros["credito"] = (f"Matéria {info_par["cod_disc"]} e código de turma {info_par["cod_turma"]} extrapola o número de créditos-aula\n")
 
         elif "ant_cod" in info_par:
             update_cod(data, ano, erros, data["semestre"], ind_modif)
@@ -435,7 +446,7 @@ def save_modify(request):
     cod_mtr_sugestao = gera_sugestoes(ano, "sem_tds_profs")
 
     print(erros)
-    
+
     return JsonResponse({'erros': erros, 'alertas': alertas, 'cells_modif': ind_modif, 'cod_mtr_sugestao': cod_mtr_sugestao})
 
 @login_required
@@ -511,7 +522,7 @@ def pref_planilha(request):
                     "erro_pln_pref": "Formato de arquivo inválido. Por favor, envie um arquivo do tipo .xlsx.", "erro_pln_atr":"Envie algum arquivo da planilha de preferências."
                 },
             )
-        
+
         mensagens = []
         instancia, created = RelatoriosPlanilhas.objects.get_or_create(id=1)
         instancia.upload_preferencias = ""
@@ -569,7 +580,7 @@ def pref_planilha(request):
                         justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc",ano=ano, semestre_ano="P", texto_justificando=row[36]).save()
                     elif row[35]:
                         justificativaMenos8Horas(professor=prof_db, justificativa="pos_doc", ano=ano, semestre_ano="I", texto_justificando=row[36]).save()
-                    
+
                     # As seguintes funções podem apresentar avisos importantes
                     pref_disc_excel_impar("impar", row, prof_db, header)
                     pref_disc_excel_impar("par", row, prof_db, header)
