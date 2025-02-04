@@ -217,7 +217,7 @@ def index(request, semestre, ano):
         "cod_mtr_sugestao_completo": cod_mtr_sugestao_completo
     }
     return render(request, "table/index.html", context)
-
+ 
 def gera_sugestoes(ano, tds):
     discs = Disciplina.objects.all()
     cod_mtr_sugestao = {}
@@ -394,6 +394,7 @@ def save_modify(request):
     erros = {}
     alertas = {}
     ind_modif = []
+    tipo = "rp" if info_par["cod_disc"] == "ACH0042" else "n"
 
     if info_par["tipo"] == "d":
         if info_par["cod_disc"] == "ACH0042":
@@ -410,7 +411,7 @@ def save_modify(request):
         
             turma_obj = cadastrar_turma(info_par, ano, data["semestre"])
             update_prof(info_par, ano, data["semestre"])
-            if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif, "n"):
+            if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif, tipo):
                 try:
                     print("Deletando turma cadastrada")
                     turma_obj.delete()

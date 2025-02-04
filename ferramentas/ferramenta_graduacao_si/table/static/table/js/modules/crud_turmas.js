@@ -41,6 +41,7 @@ const save_edition = {
 
         if(vUsercod == "ACH0042 RP2") {
             var nomesSeparados = vUserProf.split(" / ");
+            console.log("verificando no crud_turmas");
             if(vl["ant_prof"]) {
                 var anteriores = vl["ant_prof"].split(" / ");
                 var aux = nomesSeparados
@@ -48,6 +49,7 @@ const save_edition = {
                 anteriores = anteriores.filter(item => !aux.includes(item));
                 console.log(nomesSeparados)
                 console.log(anteriores)
+                console.log("ant_prof")
             }
             let indice = 1
             nomesSeparados.forEach((nome) => {
@@ -95,7 +97,7 @@ const save_edition = {
         
     },
     requisicao: (content, cell_cod, row, col) => {
-        // console.log("Requisicao:")
+        console.log("Requisicao:");
         // console.log(content)
         const myEvent = { 
             info: content,

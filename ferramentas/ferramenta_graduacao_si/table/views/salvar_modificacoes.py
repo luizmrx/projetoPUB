@@ -241,9 +241,12 @@ def atualizar_dia(turma_db, turma, year, erros, smt, ind_modif, update):
     if extrapola_creditos(turma_db, update):
         erros["credito"] = f"Matéria {turma['cod_disc']} e código de turma {turma['cod_turma']} extrapola o número de créditos-aula\n"
         return False
-    
+
+    total_turmas = Turma.objects.filter(Ano = year, CoDisc = str(turma["cod_disc"]), CodTurma = str(turma["cod_turma"]), SemestreAno = smt_ano, Eextra = extra)
+    # Garante que o dia seja atualizado para todas as turmas de rp2
     if dia.exists():
-        dia.first().Turmas.add(turma_db)
+        for turma in total_turmas:
+            dia.first().Turmas.add(turma)
     else:
         cadastrar_dia(turma_db, turma)
     return True
@@ -258,17 +261,43 @@ def extrapola_creditos(turma_db, update):
     SemestreAno = turma_db.SemestreAno
     Eextra = turma_db.Eextra
 
-    try:
-        total_turmas = Turma.objects.get(Ano = Ano, CoDisc = CoDisc, CodTurma = CodTurma, SemestreAno = SemestreAno, Eextra = Eextra)
-        print("Verificando todas as turmas")
-        print(total_turmas)
-    except:
-        return True
+    if update == "rp":
+        total_turmas = Turma.objects.filter(Ano = Ano, CoDisc = CoDisc, CodTurma = CodTurma, SemestreAno = SemestreAno, Eextra = Eextra)
+        
+        num_hrs = 0
+        # Note que os horários da turma só serão salvo após sairem desta função. Assim, para conseguirmos verificar se o usuário tentou cadastrar mais de duas turma de rp2 em diferentes horários, fazemos a contagem de horários já cadastrados. Se a contagem de turmas cadastradas for 2, o usuário deve ser impedido de tentar cadastrar mais uma. Note que devemos contabilizar todos os casos possíveis, isso significa que devemos contabilizar o caso de uma query vazia, ou seja, um horário que ainda não foi cadastrado por ainda não ter saído dessa função.
+        for turma in total_turmas:
+            # print(turma.dia_set.all())
+            num_hrs += turma.dia_set.all().count() if turma.dia_set.all().count()!=0 else 1
+            
+        # print(num_hrs)
+        # Ajustar num hrs de acordo com a quantidade de profs em rp2
+        #Caso 1: primeiro cadastro dos profs -> num_hrs == 0
+        #Caso 2: segundo cadastro dos profs -> num_hrs != 0 (caso em que precisamos tratar)
+
+        if num_hrs:
+            if len(total_turmas)==1 and num_hrs>1: return True
+            elif len(total_turmas)==2 and num_hrs>2: return True
+            elif len(total_turmas)==3 and num_hrs>3: return True
 
 
+        if len(total_turmas) > 3:
+            return True
+        else:
+            return False
+    else:
+        try:
+            total_turmas = Turma.objects.get(Ano = Ano, CoDisc = CoDisc, CodTurma = CodTurma, SemestreAno = SemestreAno, Eextra = Eextra)
+            print("Verificando todas as turmas")
+            print(turma_db)
+            print(total_turmas)
+        except:
+            return True
+
+    
     creditos_disc = turma_db.CoDisc.CreditosAula
     num_hrs = turma_db.dia_set.all().count()
-   
+
     if ((creditos_disc == 4 and num_hrs == 2) or (creditos_disc == 2 and num_hrs == 1)) and update=="n":
         print(creditos_disc)
         return True

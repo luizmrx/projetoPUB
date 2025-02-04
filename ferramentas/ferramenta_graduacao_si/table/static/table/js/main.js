@@ -549,7 +549,7 @@ const editable = {
 
             const colCod = col % 2 !== 0;
             let validInput = false;
-            //console.log("Teste");
+            // console.log("Teste");
             //Note que o valueUser nunca será "", se o usuário não escrever nada, o seu valor será <br>.
             if(valueUser==="<br>")valueUser="";
             if (colCod && valueUser !== "") {
