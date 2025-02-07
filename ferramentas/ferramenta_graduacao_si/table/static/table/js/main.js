@@ -15,6 +15,10 @@ export function setCodMtr(new_value) {
     cod_mtr_sugestao = new_value;
 }
 
+// console.log(auto_profs);
+// console.log(dtl_profs);
+// console.log(restricos_hro);
+
 // const turmas_rp = JSON.parse(document.getElementById("turmas_rp").textContent);
 
 // importando os módulos
@@ -44,6 +48,31 @@ let markCells = false;
 let transparent = false;
 let impedimento = false;
  
+function adicionar_na_lista_dinamica(lista, nome__lista, dtl_profs){
+
+    if(nome__lista){
+
+        const valorPosOuLicencaPremio =  dtl_profs[nome__lista][2] != null ? dtl_profs[nome__lista][2] : "";
+        const valorPrefOptativa = dtl_profs[nome__lista][3] != null ? dtl_profs[nome__lista][3] : "";
+        const valorConsideracao = dtl_profs[nome__lista][4] != null ? dtl_profs[nome__lista][4] : "";
+
+        let nome__prof = (`<h6 class="prof__rp">${dtl_profs[nome__lista][0]}:</h6>`)
+        let posOuLicencaPremio = (`<li class="profs-justificativas__item">Pós-doc ou licença-prêmio: ${valorPosOuLicencaPremio}</li>`);
+        let prefOptativa = (`<li class="profs-justificativas__item">Preferência optativa: ${valorPrefOptativa}</li>`);
+        let consideracao = (`<li class="profs-justificativas__item">Consideração: ${valorConsideracao}</li>`);
+
+        lista += nome__prof + posOuLicencaPremio + prefOptativa + consideracao;
+
+    }
+
+    return lista;
+
+}
+
+function padronizaNome(nome, dicio){
+    let nomeFormatado = Object.keys(dicio).find(chave => dicio[chave].trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === nome.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+    return nomeFormatado.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 
 $(document).ready(function () {
     
@@ -95,14 +124,14 @@ $(document).ready(function () {
                 document.getElementById("pos_doc").innerHTML = dtl_profs[nome_prof][2] || "Sem informações";
                 document.getElementById("pref").innerHTML = dtl_profs[nome_prof][3] || "Sem informações";
                 document.getElementById("consideracao").innerHTML = dtl_profs[nome_prof][4] || "Sem informações";
-                document.getElementById("infos_prof").style.display="block"; 
+                document.getElementById("infos_prof").style.display="block";
             }
         });
     });
 
     //autocomplete do pop-up de rp
     $(function() {
-        $("#prof_rp1, #prof_rp2").autocomplete({
+        $("#prof_rp1, #prof_rp2, #prof_rp3").autocomplete({
             source: function(request, response) {
                 let results = $.ui.autocomplete.filter(cod_mtr_sugestao_completo["ACH0042 RP2"], request.term);
                 response(results);
@@ -123,6 +152,8 @@ $(document).ready(function () {
         if ($(this).is(':checked')) {
             let cells = $('#tbl1 td');
             let apelidoProf = $('#apelido').text();
+            // console.log("1-----------");
+            // console.log(apelidoProf);
             let indexes = getCellIndexes(apelidoProf)[0];
             indexes.forEach(function (index) {
                 cells.eq(index).addClass('red-transparent');
@@ -155,34 +186,45 @@ $(document).ready(function () {
                 const specialRows = [5, 9, 11];
                 if ($.inArray(rowIndex, specialRows) !== -1) colIndex++;
             }
-                   
+
             if (colIndex % 2 === 0 && cellText !== "" && !isEditable) {
                 cell.find('i.fa').remove();
                 cell.append('<i class="fa fa-clock-o"></i>');
 
-                let lista = $('<ul class="profs-justificativas lista__direita"></ul>');
+                if(cellText.includes("/")){ //Caso de rp2 com mais de 1 prof
 
-                const nome__lista = Object.keys(auto_profs).find(chave => auto_profs[chave]===cellText).trim().toLowerCase().normalize("NFD");
-                const valorPosOuLicencaPremio =  dtl_profs[nome__lista][2] != null ? dtl_profs[nome__lista][2] : "";
-                const valorPrefOptativa = dtl_profs[nome__lista][3] != null ? dtl_profs[nome__lista][3] : "";
-                const valorConsideracao = dtl_profs[nome__lista][4] != null ? dtl_profs[nome__lista][4] : "";
+                    let lista = ('<ul class="profs-justificativas lista__rp2__direita">');
+                    let lista__final = ('</ul>');
+                    let apelidos = cellText.split("/");
 
-                // Em caso de alteração do texto do primeiro item, atualizar o código a partir de $(document).on('click', '.editable td i', function (e)
-                let posOuLicencaPremio = `<li class="profs-justificativas__item">Pós-doc ou licença-prêmio: ${valorPosOuLicencaPremio}</li>`;
-                let prefOptativa = `<li class="profs-justificativas__item">Preferência optativa: ${valorPrefOptativa}</li>`;
-                let consideracao = `<li class="profs-justificativas__item">Consideração: ${valorConsideracao}</li>`;
-    
-                lista.append(posOuLicencaPremio);
-                lista.append(prefOptativa);
-                lista.append(consideracao);
-                cell.append(lista);  // Adiciona a lista à célula
+                    apelidos.forEach(apelido => lista = adicionar_na_lista_dinamica(lista, padronizaNome(apelido, auto_profs), dtl_profs));
 
-                const listaDimensao = document.querySelector('.profs-justificativas').getBoundingClientRect();
-                const larguraTela = window.innerWidth;
-                if(listaDimensao.right>larguraTela){
-                    document.querySelector('.profs-justificativas').classList.replace('lista__direita', 'lista__esquerda');
+                    lista += lista__final;
+                    cell.append(lista);
+
+                    const listaDimensao = document.querySelector('.profs-justificativas').getBoundingClientRect();
+                    const larguraTela = parseInt(window.innerWidth);
+
+                    if((parseInt(listaDimensao.x) + 250 > larguraTela)){
+                        cell.closest('td').find('.profs-justificativas').removeClass('lista__rp2__direita').addClass('lista__rp2__esquerda');
+                    }
+
+                }else{
+                    let lista = ('<ul class="profs-justificativas lista__direita">');
+                    let lista_final = ('</ul>');
+
+                    lista = adicionar_na_lista_dinamica(lista, padronizaNome(cellText, auto_profs), dtl_profs);
+
+                    lista += lista_final;
+                    cell.append(lista);  // Adiciona a lista à célula
+
+                    const listaDimensao = document.querySelector('.profs-justificativas').getBoundingClientRect();
+                    const larguraTela = window.innerWidth;
+                    if(listaDimensao.right>larguraTela){
+                        document.querySelector('.profs-justificativas').classList.replace('lista__direita', 'lista__esquerda');
+                    }
+
                 }
-
             }
         }
     }, function () {
@@ -197,7 +239,7 @@ $(document).ready(function () {
 
         for (let i = 0; i < listaOriginal.length; i++) {
             let valor = listaOriginal[i];
-    
+
             if (valor >= 0 && valor <= 21) {
                 novaLista.push(valor);
             }else if (valor >= 46 && valor <= 56) {
@@ -208,82 +250,96 @@ $(document).ready(function () {
                 novaLista.push(valorFinal);
             }
         }
-    
+
         return novaLista;
-    }    
+    }
 
     // $(document).on('click', '#showPopup', function(event) {
     //     controlaPopUp()})
 
     //Mostra a restrições quando o ícone é clicado
     $(document).on('click', '.editable td i', function (e) {
-        const icon = $(this);                
+        const icon = $(this);
         markCells = !markCells;
-        const table = $(this).closest('table'); 
-        const id = table.attr('id'); 
+        const table = $(this).closest('table');
+        const id = table.attr('id');
         $('#checkRestricaoHro').prop('checked', false);
-        
+
         if (markCells) {
             icon.removeClass('fa-clock-o').addClass('fa-check-circle');
+            icon.closest('td').find('ul').remove();
             icon.closest('table').find('td').removeClass('red-transparent');
             icon.closest('table').find('td').removeClass('red-impedimento');
             // Adiciona a classe 'red-transparent' a células
             const cells = icon.closest('table').find('td');
             const apelidoComInformacoes = icon.parent().text().trim();
-            // Caso a primeira parte da lista (pop-up de informações do prof quando o mouse está em cima) seja trocada, mudar a parte do split correspondente. Isso ocorre porque está capturando toda a informação escrita, incluindo a lista.
-            const apelido = apelidoComInformacoes.split("Pós-doc")[0].trim();
-            let indexes = getCellIndexes(apelido)[0];
-            let indexes_imp = getCellIndexes(apelido)[1]
-            
-            if(id === "tbl_ext"){
-                indexes = adaptaParaExt(indexes)
-                indexes_imp = adaptaParaExt(indexes_imp)
-            }
-            if (indexes.length > 0) {
-                indexes.forEach(function (index) {
-                    cells.eq(index).addClass('red-transparent');
-                });
-                transparent = true;
-                indexes_imp.forEach(function (index) {
-                    cells.eq(index).addClass('red-impedimento');
-                });
-                impedimento = true;
-            } else {
-                    // Remove todas as mensagens flutuantes existentes
-                $('.floating-message').remove();
-                // Exibir mensagem flutuante
-                const message = $('<div/>', {
-                    class: 'floating-message',
-                    text: 'Sem restrição'
-                });
-                const iconPosition = icon.offset();
-                const iconWidth = icon.outerWidth();
-                const iconHeight = icon.outerHeight();
-                const messageTop = iconPosition.top + iconHeight; // Ajuste a distância vertical conforme necessário
-                const messageLeft = iconPosition.left + iconWidth; // Ajuste a distância horizontal conforme necessário
-                message.css({
-                    top: messageTop,
-                    left: messageLeft
-                });
-                $('body').append(message);
+            console.log("2---------");
+            console.log(apelidoComInformacoes);
 
-                // Remover a mensagem flutuante quando o mouse é movido para fora do ícone
-                icon.on('mouseleave', function() {
-                    message.remove();
-                    cells.find('i').remove();
-                });
+            const apelidos = apelidoComInformacoes.split("/");
+            apelidos.forEach((apelido, index) => {
+                // apelidos[index]  = apelido.trim();
+                console.log("verificando no forEach");
+                console.log(apelido);
+                console.log(typeof apelido);
+                // const apelido = apelidoComInformacoes.trim();
+                let indexes = getCellIndexes(apelido)[0];
+                let indexes_imp = getCellIndexes(apelido)[1];
 
-                markCells = false;
-                
-            }
+                if(id === "tbl_ext"){
+                    indexes = adaptaParaExt(indexes)
+                    indexes_imp = adaptaParaExt(indexes_imp)
+                }
+                if (indexes.length > 0) {
+                    indexes.forEach(function (index) {
+                        cells.eq(index).addClass('red-transparent');
+                    });
+                    transparent = true;
+                    indexes_imp.forEach(function (index) {
+                        cells.eq(index).addClass('red-impedimento');
+                    });
+                    impedimento = true;
+                } else {
+                        // Remove todas as mensagens flutuantes existentes
+                    $('.floating-message').remove();
+                    // Exibir mensagem flutuante
+                    const message = $('<div/>', {
+                        class: 'floating-message',
+                        text: 'Sem restrição'
+                    });
+                    const iconPosition = icon.offset();
+                    const iconWidth = icon.outerWidth();
+                    const iconHeight = icon.outerHeight();
+                    const messageTop = iconPosition.top + iconHeight; // Ajuste a distância vertical conforme necessário
+                    const messageLeft = iconPosition.left + iconWidth; // Ajuste a distância horizontal conforme necessário
+                    message.css({
+                        top: messageTop,
+                        left: messageLeft
+                    });
+                    $('body').append(message);
+
+                    // Remover a mensagem flutuante quando o mouse é movido para fora do ícone
+                    icon.on('mouseleave', function() {
+                        message.remove();
+                        cells.find('i').remove();
+                    });
+
+                    markCells = false;
+
+                }
+
+            });
+
             
-        } else { 
+            
+
+        } else {
             icon.removeClass('fa-check-circle').addClass('fa-clock-o');
             icon.closest('table').find('td').removeClass('red-transparent');
             icon.closest('table').find('td').removeClass('red-impedimento');
             transparent = false;
             impedimento = false
-        }   
+        }
     });
 
     $(".editable td").on("dblclick", handleDoubleClick);
@@ -296,8 +352,8 @@ $(document).ready(function () {
         let colIndex = cell.cellIndex;
         const rowIndex = cell.parentNode.rowIndex;
         let is_ext = true;
-        const table = $(this).closest('table'); 
-        const id = table.attr('id'); 
+        const table = $(this).closest('table');
+        const id = table.attr('id');
 
         if(id === "tbl1"){
             is_ext = false;
@@ -310,38 +366,62 @@ $(document).ready(function () {
 
         // Verifica se o alvo do clique é o ícone
         if (!target.classList.contains('fa')) editable.edit(cell, rowIndex, colIndex, is_ext);
-        
+
     }
 
 });
 
  // Função para obter índices de células das restrições de horário de um professor
  function getCellIndexes(cellName) {
+
+    // if(cellName.includes("/")){
+    //     const apelidos = cellName.split("/");
+    //     apelidos.forEach((apelido, index) => {
+    //         apelidos[index]  = apelido.trim();
+    //         getCellIndexes(apelidos[index]);
+    //     });
+    // }else{
+
     const indexes = [];
     const indexes_rest = [];
-    const indexes_imped = []
-    const rest_prof = restricos_hro[cellName]
-    const impedimentos = impedimentos_totais[cellName]
+    const indexes_imped = [];
+    console.log("+++++++++");
+    console.log(typeof cellName);
+    const rest_prof = restricos_hro[cellName.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")]
+    console.log("teste no getCellIndexes");
+    console.log(cellName);
+    console.log(restricos_hro);
+    console.log(rest_prof);
+    const impedimentos = impedimentos_totais[cellName.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")]
     indexes_rest.push(...rest_prof);
     indexes_imped.push(...impedimentos);
     indexes.push(indexes_rest)
     indexes.push(indexes_imped)
     return indexes;
-}
 
+    // }
+    
+    
+
+    
+}
+// Atenção nessa função após a alteração do dtl_profs
 function coresRestrições() {
     let cells = $('#tbl1 td');
     for(let i = 0; i < 90; i++) {
         let conteudoCelula = cells.eq(i)[0].innerText.split(" / ");
+        console.log(conteudoCelula);
         conteudoCelula.forEach((apelido) => {
 
             if(apelido) {
                 Object.keys(dtl_profs).map((professor) => {
                     if(dtl_profs[professor][1] == apelido) {
-                        if(getCellIndexes(apelido)[0].includes(i)) {
+                        console.log("cores");
+                        console.log(apelido);
+                        if(getCellIndexes(apelido.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))[0].includes(i)) {
                             cells.eq(i).addClass("prof-na-restricão")
                         }
-                        if(getCellIndexes(apelido)[1].includes(i)) {
+                        if(getCellIndexes(apelido.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))[1].includes(i)) {
                             cells.eq(i).addClass("prof-no-impedimento")
                         }
                     }
@@ -369,14 +449,14 @@ const editable = {
         // Remove ícone presente na célula
         $(cell).closest('table').find('i').remove();
         $(cell).closest('table').find('ul').remove();
-        
+
         // Remove a classe 'red-transparent' das células marcadas
         if(transparent){
             $(cell).closest('table').find('td.red-transparent').removeClass('red-transparent');
             transparent = false;
             markCells = !markCells;
         }
-        
+
         //Como toda vez que o impedimento for verdadeiro a "transparent" é true,
         //não é necessário negar novamente o markCells
         if(impedimento){
@@ -391,17 +471,17 @@ const editable = {
 
         // (B1) REMOVE "DOUBLE CLICK TO EDIT"
         cell.ondblclick = "";
-                    
+
         // (B2) EDITABLE CONTENT
         $(cell).attr("contenteditable", "true");
         $(cell).focus();
-        
+
         const temp_cods = Object.keys(cods_auto_obrig).concat(Object.keys(cods_auto_ext));
         const uniqueTempCods = removeDuplicates(temp_cods);
 
         // (B2.1) ADD AUTOCOMPLETE
         if (col % 2 === 0){
-            
+
             if($(cell).prev()[0].innerText == "ACH0042 RP2") {
                 controlaPopUp($(cell), auto_profs);
             }
@@ -415,9 +495,9 @@ const editable = {
 
                   const uniqueInList1 = difference(list1, list2);
                   let list_sugestao = cod_mtr_sugestao[$(cell).prev()[0].innerText]
-                  
+
                   uniqueInList1.forEach(function(word) {
-  
+
                       if(searchInTableRows(cell, word) === true){
                           list_sugestao.push(word)
                       }
@@ -425,7 +505,7 @@ const editable = {
                   });
 
                 $(cell).autocomplete({
-                    
+
                     source: function(request, response) {
                         response(list_sugestao);
                     },
@@ -443,8 +523,6 @@ const editable = {
                     $(this).autocomplete("search");
                 });
             }
-               
-                
         }
         else {
             //autocompleta com a matéria
@@ -453,7 +531,7 @@ const editable = {
                     let results;
                     //linhas entre [4,6] são do vespertino
                     if ((row >= 4 && row <= 6) || editable.is_ext) {
-                        
+
                         results = $.ui.autocomplete.filter(uniqueTempCods, request.term);
                     } else {
                         results = $.ui.autocomplete.filter(Object.keys(cods_auto_obrig), request.term);
@@ -472,18 +550,18 @@ const editable = {
 
         // (C3) "MARK" CURRENT SELECTED CELL
         editable.selected = cell;
-        
+
         // (C4) PRESS ENTER/ESC OR CLICK OUTSIDE TO END EDIT
         // A ideia do ESC é recuperar o valor de antes do usuário modificar
         // ainda falta implementar
         if($(cell).prev()[0]){
-            
+
             if($(cell).prev()[0].innerText == "ACH0042 RP2") {
                 let anterior = $(cell)[0].innerText;
 
                 $("#submitForm").on("click", editable.close);
-            
-            } 
+
+            }
             else {
                 window.addEventListener("click", editable.close);
                 cell.onkeydown = evt => {
@@ -516,13 +594,13 @@ const editable = {
             cell_lado = $(selected).next();
         }else{
             v_cell_lado = v_prevCell;
-            cell_lado = $(selected).prev();   
+            cell_lado = $(selected).prev();
         }
 
         if(valueUser == "" && v_cell_lado != "") $(cell_lado).html("")
 
         // REMOVE "EDITABLE"
-        window.getSelection().removeAllRanges(); 
+        window.getSelection().removeAllRanges();
         $(selected).attr("contenteditable", "false");
 
         // RESTORE CLICK LISTENERS
@@ -530,7 +608,7 @@ const editable = {
         selected.onkeydown = "";
         selected.ondblclick = () => editable.edit(selected);
     },
- 
+
     // (C) END "EDIT MODE"
     close: evt => {
         if (evt.target !== editable.selected) {
@@ -538,7 +616,7 @@ const editable = {
             const col = editable.colIndex;
             const row = editable.rowIndex;
             let caso_update = false;
-            
+
             // tira ícones que podem estar nas células posterior e anterior
             $(editable.selected).find("i").remove();
 
@@ -556,14 +634,14 @@ const editable = {
                 let ExistMtr = false;
                 if (cods_auto_obrig.hasOwnProperty(valueUser)) ExistMtr = true;
                 const mtr_ext_valida = cods_auto_ext.hasOwnProperty(valueUser)
-                if((row >= 4 && row <= 6 && mtr_ext_valida) | (mtr_ext_valida && editable.is_ext))  ExistMtr = true; 
-                
+                if((row >= 4 && row <= 6 && mtr_ext_valida) | (mtr_ext_valida && editable.is_ext))  ExistMtr = true;
+
                 if (!ExistMtr) {
                     const msg_erro = "Código de Matéria inválido, consulte o desejado na tabela abaixo";
                     erro_entrada(msg_erro, colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext)
-                   
+
                 }else{
-                    
+
                     console.log(valueUser);
                     console.log(editable.previousValue);
                     if(valueUser!==editable.previousValue && editable.previousValue!==""){
@@ -587,15 +665,15 @@ const editable = {
                         const nomeEncontrado = Object.keys(auto_profs).find(function(nome) {
                             return auto_profs[nome] === name;
                         });
-                          
+
                         if (nomeEncontrado) {
                             console.log(name + " encontrado")
-                            ExistProf = true 
+                            ExistProf = true
                         } else {
                             console.log(name + " não encontrado")
-                            ExistProf = false 
+                            ExistProf = false
                         }
-                        
+
                         if(!ExistProf){
                             erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext);
                         }else{
@@ -607,19 +685,17 @@ const editable = {
                     const nomeEncontrado = Object.keys(auto_profs).find(function(nome) {
                         return auto_profs[nome] === valueUser;
                     });
-                      
-                    if (nomeEncontrado) ExistProf = true 
-                    
+
+                    if (nomeEncontrado) ExistProf = true
+
                     if(!ExistProf){
                         erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext);
                     }else{
                         validInput = true;
                     }
                 }
-                
-                
             }
-    
+
             editable.removeEditable(editable.selected, colCod, valueUser, valueNextCell, valuePrevCell);
 
             //Exceção das duas células da segunda linha do vespertino 1
@@ -627,7 +703,7 @@ const editable = {
             // const parIncompletoDireita = validInput && colCod &&  valueNextCell === "";
             let parIncompletoDireita=false;
             let vl = { "extra": false };
-            
+
             if((validInput && colCod &&  valueNextCell === "")||caso_update){
                 //Precisamos armazenar a materia anterior da atual em caso de update
                 vl["mtr_ant"]=editable.previousValue;
@@ -635,10 +711,10 @@ const editable = {
                 // console.log("Testando vl");
                 // console.log(vl["mtr_ant"]);
                 parIncompletoDireita= true;
-            } 
+            }
 
-           
-            const parIncompletoEsquerda = validInput && !colCod && valuePrevCell === ""; 
+
+            const parIncompletoEsquerda = validInput && !colCod && valuePrevCell === "";
 
             // (C4) Se a célula ao lado estiver vazia ela fica editável
             //o indice 0 tem o elemento DOM da célula
@@ -646,19 +722,19 @@ const editable = {
             if(parIncompletoEsquerda) editable.edit(prevCell.get(0), row, col - 1, editable.is_ext);
 
             //(C5) Se o par de células estiver completo chama o save_edition
-            
-            
+
+
             if(editable.is_ext) vl["extra"] = true;
-            if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "") 
+            if(validInput && (editable.previousValue !== valueUser) && ((colCod && !parIncompletoDireita  && valueUser !== "")
             || (!colCod && !parIncompletoEsquerda && valueUser !== ""))){
                 //"i/u" == insert/update
                 console.log(editable.previousValue);
                 if(editable.previousValue !== ""){
-                   
+
 
                     //update
 
-                    
+
                     vl["mtr_ant"]=valor_materia;
                     console.log("update ver");
                     console.log(vl["mtr_ant"]);
@@ -667,16 +743,16 @@ const editable = {
                         vl["ant_prof"] = editable.previousValue;
                     }
                     save_edition.extrairDados(editable.selected, col, row, colCod, "u", vl);
-                    
-                    
+
+
                 }else{
                     console.log("insert ver");
                     //insert
                     save_edition.extrairDados(editable.selected, col, row, colCod, "i", vl);
-    
-                    
+
+
                 }
-                
+
             }
 
             //(C6) caso de deleção
@@ -693,7 +769,7 @@ const editable = {
                 //"d" == delete
                 save_edition.extrairDados(editable.selected, col, row, colCod, "d", vl);
             }
-            
+
         }
     }
 };
@@ -707,7 +783,7 @@ function erro_entrada(msg, isCod, v_User, v_nextCell, v_PrevCell, ext){
         // Foca novamente na célula se a entrada for inválida
         editable.edit(editable.selected, editable.rowIndex, editable.colIndex, ext);
         return;
-    }); 
+    });
 }
 
 function removeDuplicates(arr) {
@@ -757,7 +833,7 @@ function searchInTableRows(cell, word) {
     rowsToSearch.forEach(function(index) {
         console.log("linhas pesquisada")
         console.log(index)
-        
+
         const $currentRow = $rows.eq(index - 1); // Ajustando para índice 0-based
         if (containsWord($currentRow, word)) {
             found = true;

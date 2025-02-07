@@ -14,6 +14,7 @@ from .planilha_distribuicao import *
 from .planilha_docentes import *
 from .salvar_modificacoes import *
 from .preferencias_upload import *
+from .rp1_table import remover_acentos
 
 @login_required
 def index(request, semestre, ano):
@@ -88,7 +89,7 @@ def index(request, semestre, ano):
     detalhes_profs = {}
     for prof_obj in profs_objs:
         # Já carrega dados necessários para as sugestões e detalhes do professor
-        nome = unicodedata.normalize("NFD", prof_obj.NomeProf.lower())
+        nome = remover_acentos(prof_obj.NomeProf.lower())
         auto_profs[prof_obj.NomeProf] = prof_obj.Apelido
         consideracao = prof_obj.consideracao1 if semestre % 2 else prof_obj.consideracao2
         detalhes_profs[nome] = [prof_obj.NomeProf, prof_obj.Apelido, prof_obj.pos_doc, prof_obj.pref_optativas,
@@ -97,8 +98,9 @@ def index(request, semestre, ano):
         # tentar melhorar desempenho da linha abaixo
         restricoes = prof_obj.restricao_set.filter(semestre=s_rest)
 
-        restricoes_profs[str(prof_obj.Apelido)] = []
-        impedimentos_totais[str(prof_obj.Apelido)] = []
+        # restricoes_profs[str(prof_obj.Apelido)] = []
+        restricoes_profs[remover_acentos(prof_obj.Apelido.lower())] = []
+        impedimentos_totais[remover_acentos(prof_obj.Apelido.lower())] = []
 
         for rest_prof in restricoes:
             list_rest_indice = []
@@ -123,13 +125,13 @@ def index(request, semestre, ano):
                 list_rest_indice = [indice, indice + 1, indice + 11, indice + 12]
 
             if str(prof_obj.Apelido) in restricoes_profs:
-                restricoes_profs[str(prof_obj.Apelido)] += list_rest_indice
+                restricoes_profs[remover_acentos(prof_obj.Apelido.lower())] += list_rest_indice
             else:
-                restricoes_profs[str(prof_obj.Apelido)] = list_rest_indice
+                restricoes_profs[remover_acentos(prof_obj.Apelido.lower())] = list_rest_indice
 
             # impedimento total
             if rest_prof.impedimento:
-                impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
+                impedimentos_totais[remover_acentos(prof_obj.Apelido.lower())] = list_rest_indice
 
     if ano == AnoAberto.objects.get(id=1).Ano:
         discs = Disciplina.objects.filter(ativa=True).exclude(CoDisc__in=("ACH0021", "ACH0041"))

@@ -178,3 +178,22 @@
 .bloco-linha:hover .lista__rp1__cima{
     display: block;
 }
+
+.lista__rp2__direita{
+    display: none;
+    left: 99%;
+    top: 0%;
+    max-height: 400px;
+}
+
+.lista__rp2__esquerda{
+    display: none;
+    right: 99%;
+    top: 0%;
+    max-height: 400px;
+}
+
+.bloco-linha:hover .lista__rp2__direita,
+.bloco-linha:hover .lista__rp2__esquerda{
+    display: block;
+}
