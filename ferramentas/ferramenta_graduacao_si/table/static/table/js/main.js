@@ -15,9 +15,9 @@ export function setCodMtr(new_value) {
     cod_mtr_sugestao = new_value;
 }
 
-// console.log(auto_profs);
-// console.log(dtl_profs);
-// console.log(restricos_hro);
+console.log(auto_profs);
+console.log(dtl_profs);
+console.log(restricos_hro);
 
 // const turmas_rp = JSON.parse(document.getElementById("turmas_rp").textContent);
 
@@ -273,17 +273,11 @@ $(document).ready(function () {
             // Adiciona a classe 'red-transparent' a células
             const cells = icon.closest('table').find('td');
             const apelidoComInformacoes = icon.parent().text().trim();
-            console.log("2---------");
-            console.log(apelidoComInformacoes);
+            let restricaoOuImpedimento = false;
 
             const apelidos = apelidoComInformacoes.split("/");
             apelidos.forEach((apelido, index) => {
-                // apelidos[index]  = apelido.trim();
-                console.log("verificando no forEach");
-                console.log(apelido);
-                console.log(typeof apelido);
-                // const apelido = apelidoComInformacoes.trim();
-                let indexes = getCellIndexes(apelido)[0];
+               let indexes = getCellIndexes(apelido)[0];
                 let indexes_imp = getCellIndexes(apelido)[1];
 
                 if(id === "tbl_ext"){
@@ -291,6 +285,7 @@ $(document).ready(function () {
                     indexes_imp = adaptaParaExt(indexes_imp)
                 }
                 if (indexes.length > 0) {
+                    restricaoOuImpedimento = true;
                     indexes.forEach(function (index) {
                         cells.eq(index).addClass('red-transparent');
                     });
@@ -299,37 +294,36 @@ $(document).ready(function () {
                         cells.eq(index).addClass('red-impedimento');
                     });
                     impedimento = true;
-                } else {
-                        // Remove todas as mensagens flutuantes existentes
-                    $('.floating-message').remove();
-                    // Exibir mensagem flutuante
-                    const message = $('<div/>', {
-                        class: 'floating-message',
-                        text: 'Sem restrição'
-                    });
-                    const iconPosition = icon.offset();
-                    const iconWidth = icon.outerWidth();
-                    const iconHeight = icon.outerHeight();
-                    const messageTop = iconPosition.top + iconHeight; // Ajuste a distância vertical conforme necessário
-                    const messageLeft = iconPosition.left + iconWidth; // Ajuste a distância horizontal conforme necessário
-                    message.css({
-                        top: messageTop,
-                        left: messageLeft
-                    });
-                    $('body').append(message);
-
-                    // Remover a mensagem flutuante quando o mouse é movido para fora do ícone
-                    icon.on('mouseleave', function() {
-                        message.remove();
-                        cells.find('i').remove();
-                    });
-
-                    markCells = false;
-
-                }
+                } 
 
             });
+            if(!restricaoOuImpedimento){
+                // Remove todas as mensagens flutuantes existentes
+                $('.floating-message').remove();
+                // Exibir mensagem flutuante
+                const message = $('<div/>', {
+                    class: 'floating-message',
+                    text: 'Sem restrição'
+                });
+                const iconPosition = icon.offset();
+                const iconWidth = icon.outerWidth();
+                const iconHeight = icon.outerHeight();
+                const messageTop = iconPosition.top + iconHeight; // Ajuste a distância vertical conforme necessário
+                const messageLeft = iconPosition.left + iconWidth; // Ajuste a distância horizontal conforme necessário
+                message.css({
+                    top: messageTop,
+                    left: messageLeft
+                });
+                $('body').append(message);
 
+                // Remover a mensagem flutuante quando o mouse é movido para fora do ícone
+                icon.on('mouseleave', function() {
+                    message.remove();
+                    cells.find('i').remove();
+                });
+
+                markCells = false;
+            }
             
             
 
@@ -373,36 +367,21 @@ $(document).ready(function () {
 
  // Função para obter índices de células das restrições de horário de um professor
  function getCellIndexes(cellName) {
-
-    // if(cellName.includes("/")){
-    //     const apelidos = cellName.split("/");
-    //     apelidos.forEach((apelido, index) => {
-    //         apelidos[index]  = apelido.trim();
-    //         getCellIndexes(apelidos[index]);
-    //     });
-    // }else{
-
+    
     const indexes = [];
     const indexes_rest = [];
     const indexes_imped = [];
-    console.log("+++++++++");
-    console.log(typeof cellName);
     const rest_prof = restricos_hro[cellName.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")]
-    console.log("teste no getCellIndexes");
-    console.log(cellName);
-    console.log(restricos_hro);
-    console.log(rest_prof);
+    // console.log("teste no getCellIndexes");
+    // console.log(cellName);
+    // console.log(restricos_hro);
+    // console.log(rest_prof);
     const impedimentos = impedimentos_totais[cellName.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")]
     indexes_rest.push(...rest_prof);
     indexes_imped.push(...impedimentos);
     indexes.push(indexes_rest)
     indexes.push(indexes_imped)
     return indexes;
-
-    // }
-    
-    
-
     
 }
 // Atenção nessa função após a alteração do dtl_profs
@@ -410,14 +389,14 @@ function coresRestrições() {
     let cells = $('#tbl1 td');
     for(let i = 0; i < 90; i++) {
         let conteudoCelula = cells.eq(i)[0].innerText.split(" / ");
-        console.log(conteudoCelula);
+        // console.log(conteudoCelula);
         conteudoCelula.forEach((apelido) => {
 
             if(apelido) {
                 Object.keys(dtl_profs).map((professor) => {
                     if(dtl_profs[professor][1] == apelido) {
-                        console.log("cores");
-                        console.log(apelido);
+                        // console.log("cores");
+                        // console.log(apelido);
                         if(getCellIndexes(apelido.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))[0].includes(i)) {
                             cells.eq(i).addClass("prof-na-restricão")
                         }
@@ -487,22 +466,20 @@ const editable = {
             }
             else {
                 //autocompleta com o nome do professor
-                  // Elementos que estão em list1, mas não em list2
-                  const list1 = cod_mtr_sugestao_completo[$(cell).prev()[0].innerText];
-                  const list2 = cod_mtr_sugestao[$(cell).prev()[0].innerText];
-                  console.log("----------")
-                  console.log(list2)
+                // Elementos que estão em list1, mas não em list2
+                const list1 = cod_mtr_sugestao_completo[$(cell).prev()[0].innerText];
+                const list2 = cod_mtr_sugestao[$(cell).prev()[0].innerText];
 
-                  const uniqueInList1 = difference(list1, list2);
-                  let list_sugestao = cod_mtr_sugestao[$(cell).prev()[0].innerText]
+                const uniqueInList1 = difference(list1, list2);
+                let list_sugestao = cod_mtr_sugestao[$(cell).prev()[0].innerText];
 
-                  uniqueInList1.forEach(function(word) {
+                uniqueInList1.forEach(function(word) {
 
-                      if(searchInTableRows(cell, word) === true){
-                          list_sugestao.push(word)
-                      }
+                    if(searchInTableRows(cell, word) === true){
+                        list_sugestao.push(word);
+                    }
 
-                  });
+                });
 
                 $(cell).autocomplete({
 
@@ -633,12 +610,12 @@ const editable = {
             if (colCod && valueUser !== "") {
                 let ExistMtr = false;
                 if (cods_auto_obrig.hasOwnProperty(valueUser)) ExistMtr = true;
-                const mtr_ext_valida = cods_auto_ext.hasOwnProperty(valueUser)
+                const mtr_ext_valida = cods_auto_ext.hasOwnProperty(valueUser);
                 if((row >= 4 && row <= 6 && mtr_ext_valida) | (mtr_ext_valida && editable.is_ext))  ExistMtr = true;
 
                 if (!ExistMtr) {
                     const msg_erro = "Código de Matéria inválido, consulte o desejado na tabela abaixo";
-                    erro_entrada(msg_erro, colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext)
+                    erro_entrada(msg_erro, colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext);
 
                 }else{
 
@@ -667,11 +644,11 @@ const editable = {
                         });
 
                         if (nomeEncontrado) {
-                            console.log(name + " encontrado")
-                            ExistProf = true
+                            console.log(name + " encontrado");
+                            ExistProf = true;
                         } else {
-                            console.log(name + " não encontrado")
-                            ExistProf = false
+                            console.log(name + " não encontrado");
+                            ExistProf = false;
                         }
 
                         if(!ExistProf){
@@ -686,7 +663,7 @@ const editable = {
                         return auto_profs[nome] === valueUser;
                     });
 
-                    if (nomeEncontrado) ExistProf = true
+                    if (nomeEncontrado) ExistProf = true;
 
                     if(!ExistProf){
                         erro_entrada("Nome do professor inválido", colCod, valueUser, valueNextCell, valuePrevCell, editable.is_ext);
