@@ -86,11 +86,18 @@ def update_cod(data, year, erros, smt, ind_modif):
 def deletar_valor(data, year, erros):
     # Iterar sobre as turmas do banco de dados e excluir aquelas que não estão em tbl_user
     infos_user = data["info"]
+    print(infos_user)
     smt_ano = "I" if data["semestre"] % 2 else "P"
 
     codisc = ""
     if infos_user["tipo"] == "u":
-        codisc = infos_user["ant_cod"].split()[0]
+        try:
+            codisc = infos_user["ant_cod"].split()[0]
+        except:
+            try:
+                codisc = infos_user["mtr_ant"].split()[0]
+            except:
+                print("Erro ao buscar o código da disciplina")
     else:
         codisc = infos_user["cod_disc"]
 
@@ -106,6 +113,7 @@ def deletar_valor(data, year, erros):
             obj_turma.delete()
 
     except:
+        # Note que no caso de update de rp2 haverá um erro já que iremos deletar a  turma 3 vezes, ou seja, obj_turma só será capturado na primeira vez, nas demais teremos um erro. Mas isso não influência na performance do sistema
         erros["delecao"] = "Erro ao deletar par de células\n"
 
 
@@ -118,6 +126,7 @@ def deletar_valor_RP(data, year, erros):
 
     try:
         dia = Dia.objects.get(DiaSemana=int(infos_user["dia"]), Horario=int(infos_user["horario"]))
+        print(dia)
         obj_turma = Turma.objects.filter(Ano=year, CoDisc=codisc,
                                    CodTurma=str(infos_user["cod_turma"]), SemestreAno=smt_ano)
         

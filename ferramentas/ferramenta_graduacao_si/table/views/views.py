@@ -423,25 +423,48 @@ def save_modify(request):
 
     elif info_par["tipo"] == "u":
 
-        if "ant_prof" in info_par:
+        if "mtr_ant" in info_par:
             aula_manha_noite(data, alertas, ano)
             aula_noite_outro_dia_manha(data, alertas, ano)
 
             if not aula_msm_horario(info_par, ano, data, erros):
-
-                turma_obj = update_prof(info_par, ano, data["semestre"])
-                if(turma_obj != "Chave duplicada"): 
-                    indice_tbl_update(turma_obj, ind_modif, info_par)
-                    if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif, "s"):
+            
+                # Update no caso da matéria anterior ser RP2
+                if info_par["mtr_ant"] == "ACH0042 RP2":
+                    deletar_valor_RP(data, ano, erros)
+                    turma_obj = cadastrar_turma(info_par, ano, data["semestre"])
+                    update_prof(info_par, ano, data["semestre"])
+                    if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif, tipo):
                         try:
-                            print("Deletando turma cadastrada")
                             turma_obj.delete()
-                            print("Funcionou")
                         except:
                             pass
-                else:
-                    print(info_par)
-                    erros["credito"] = (f"Matéria {info_par["cod_disc"]} e código de turma {info_par["cod_turma"]} extrapola o número de créditos-aula\n")
+                
+                # Update no caso da matéria atual ser RP2
+                elif info_par["cod_disc"] == "ACH0042":
+                    deletar_valor(data, ano, erros)
+                    turma_obj = cadastrar_turma(info_par, ano, data["semestre"])
+                    update_prof(info_par, ano, data["semestre"])
+                    if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif, tipo):
+                        try:
+                            turma_obj.delete()
+                        except:
+                            pass
+
+                # Update para o caso de não ser relacionado a RP2
+                else: 
+                    turma_obj = update_prof(info_par, ano, data["semestre"])
+
+                    if(turma_obj != "Chave duplicada"): 
+                        indice_tbl_update(turma_obj, ind_modif, info_par)
+                        if not atualizar_dia(turma_obj, info_par, ano, erros, data["semestre"], ind_modif, "s"):
+                            try:
+                                turma_obj.delete()
+                            except:
+                                pass
+                    else:
+                        print(info_par)
+                        erros["credito"] = (f"Matéria {info_par["cod_disc"]} e código de turma {info_par["cod_turma"]} extrapola o número de créditos-aula\n")
 
         elif "ant_cod" in info_par:
             update_cod(data, ano, erros, data["semestre"], ind_modif)
