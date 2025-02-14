@@ -278,6 +278,7 @@ def extrapola_creditos(turma_db, update):
         for turma in total_turmas:
             # print(turma.dia_set.all())
             num_hrs += turma.dia_set.all().count() if turma.dia_set.all().count()!=0 else 1
+            # print(turma.dia_set.all())
             
         # print(num_hrs)
         # Ajustar num hrs de acordo com a quantidade de profs em rp2
@@ -563,6 +564,10 @@ def aula_msm_horario(inf, ano, data, erros):
     for t in turma_prof:
         # if t.CoDisc.SemestreIdeal == smt:
         #     continue
+
+        # Perceba que no caso de RP2 quando adicionar o primeiro professor todos os demias já serão atualizados, note o caso de deleção. Por isso que não devemos fazer a verificação para os demais professores que não estão na primeira posição pois eles tentariam ser salvos em um horário já preenchido causando o erro. Perceba ainad que esse caso ocorre apenas depois de salvarmos a primeira turma com os professores.
+        if "ACH0042" in t.CoDisc.CoDisc and inf["posicao"] != 1:
+            return True
 
         conflito_hr = t.dia_set.filter(DiaSemana=inf["dia"], Horario=inf["horario"])
         if conflito_hr:
