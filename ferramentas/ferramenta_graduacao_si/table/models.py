@@ -53,14 +53,14 @@ class Disciplina(models.Model):
     CoDisc = models.CharField(primary_key=True, max_length=7)
     professores = models.ManyToManyField(Professor, through="Preferencias")
     Abreviacao = models.CharField(max_length=10, null=True)
-    NomeDisc = models.CharField(max_length=60, null=True)
+    NomeDisc = models.CharField(max_length=200, null=True)
     SemestreIdeal = models.IntegerField(choices=list(zip(range(1, 9), range(1, 9))))
-    creditos = [(2, 2), (4, 4)]
+    creditos = [(0, 0), (2, 2), (4, 4)]
     CreditosAula = models.IntegerField(choices=creditos, default=4)
     tipo = [
         ("obrigatoria", "Obrigatória"),
         ("optativaCB", "Optativa - Ciclo Básico"),
-        ("dea", "Optativa - Sistemas de informação"),
+        ("optativaSI", "Optativa - Sistemas de informação"),
     ]
     TipoDisc = models.CharField(max_length=12, choices=tipo, default="obrigatoria")
     ativa = models.BooleanField(default=True)

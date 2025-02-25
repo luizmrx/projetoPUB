@@ -159,11 +159,13 @@ def index(request, semestre, ano):
 
     # Serve para listar as disciplinas na página
     if semestre in [7, 8]:
-        vls_disciplinas = discs.filter(Q(SemestreIdeal=semestre) | Q(TipoDisc="optativaSI"))
+        #vls_disciplinas = discs.filter(Q(SemestreIdeal=semestre) | Q(TipoDisc="optativaSI"))
+        vls_disciplinas = discs.filter(SemestreIdeal=semestre)
     else:
         vls_disciplinas = discs.filter(SemestreIdeal=semestre)
 
     disc_obrig = vls_disciplinas.filter(TipoDisc="obrigatoria")
+
     tables_info = [
         {
             "title": "Disciplinas SI (Obrigatórias)",
@@ -193,8 +195,9 @@ def index(request, semestre, ano):
 
         for pref in pref_semestre:
             if pref.nivel == row:
-                j = tbl_pref[0].index(pref.CoDisc.Abreviacao)
-                tbl_pref[row][j].append(pref.NumProf.Apelido)
+                if pref.CoDisc.Abreviacao in tbl_pref[0]:
+                    j = tbl_pref[0].index(pref.CoDisc.Abreviacao)
+                    tbl_pref[row][j].append(pref.NumProf.Apelido)
 
     ano_func = AnoAberto.objects.get(id=1).Ano
     cod_mtr_sugestao = gera_sugestoes(ano_func, "sem_tds_profs")

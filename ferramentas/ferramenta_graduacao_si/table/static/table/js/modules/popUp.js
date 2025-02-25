@@ -10,6 +10,7 @@ function controlaPopUp(cell, apelidos) {
         document.getElementById("closePopup").addEventListener("click", function() {
             document.getElementById("popup").style.display = "none";
             coresRestrições();
+            location.reload(true);
         });
         
         document.getElementById("submitForm").addEventListener("click", function() {

@@ -341,6 +341,8 @@ def gera_sugestoes_rp1(ano):
 
             # Comentar o próximo trecho para poder testar o mesmo professor na tabela de rp1 (somente para teste)
             if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
+                # Verificar o caso em que subimos uma nova tabela de preferencias e a tabela atual já conter algum professor que não está na disciplina atualamente, causanado um erro na falha do dicionario
+                # if prof.NomeProf in auto_profs:
                 del auto_profs[prof.NomeProf]
 
 
