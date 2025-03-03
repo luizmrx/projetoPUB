@@ -197,7 +197,8 @@ def index(request, semestre, ano):
             if pref.nivel == row:
                 if pref.CoDisc.Abreviacao in tbl_pref[0]:
                     j = tbl_pref[0].index(pref.CoDisc.Abreviacao)
-                    tbl_pref[row][j].append(pref.NumProf.Apelido)
+                    if pref.NumProf.Apelido not in tbl_pref[row][j]:
+                        tbl_pref[row][j].append(pref.NumProf.Apelido)
 
     ano_func = AnoAberto.objects.get(id=1).Ano
     cod_mtr_sugestao = gera_sugestoes(ano_func, "sem_tds_profs")

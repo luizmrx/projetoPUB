@@ -70,7 +70,7 @@ def planilha_docentes(sheet_doc):
 
         #Poderia ser qualquer uma, só serve para indicar o semestre
         ia = Disciplina.objects.get(Abreviacao="IA")
-        mqa = Disciplina.objects.get(Abreviacao="MQA")
+        mqa = Disciplina.objects.get(Abreviacao="MQASI")
 
         if not mais8_horas_aula_prof(ia, professor):
             sheet_doc.cell(row=row, column=col_1_disc).font = Font(
