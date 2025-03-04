@@ -115,6 +115,16 @@ def page_rp1(request, text=""):
                 impedimentos_totais[str(prof_obj.Apelido)] = list_rest_indice
 
     text = text.replace("[", "").replace("]", "").replace("'", "")
+    
+    profs_verificados = []
+    for prof in profs_objs:
+        profs_verificados.append(prof)
+    
+    for turma in rp1_turmas:
+        professores = turma.professor_si.all()
+        for professor in professores:
+            if professor not in profs_verificados:
+                turma.professor_si.remove(professor)
 
     print(restricoes_profs)
     ano_aberto = AnoAberto.objects.get(id=1).Ano
@@ -341,9 +351,10 @@ def gera_sugestoes_rp1(ano):
 
             # Comentar o próximo trecho para poder testar o mesmo professor na tabela de rp1 (somente para teste)
             if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
-                # Verificar o caso em que subimos uma nova tabela de preferencias e a tabela atual já conter algum professor que não está na disciplina atualamente, causanado um erro na falha do dicionario
-                # if prof.NomeProf in auto_profs:
-                del auto_profs[prof.NomeProf]
+                try:
+                    del auto_profs[prof.NomeProf]
+                except:
+                    print("Erro ao deletar o professor do auto_profs")
 
 
     return auto_profs
