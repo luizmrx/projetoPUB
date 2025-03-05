@@ -411,11 +411,30 @@
     $(document).ready(function() {
        
         $('.controla-menu').click(function(e) {
-            const targetId = $(this).attr('href'); 
-            $('#item-0, #item-1, #item-3, #item-4, #item-5, #item-7').addClass("d-none")
-            $(targetId).removeClass('d-none')
+            let targetId = $(this).attr('href'); 
+            $('#item-0, #item-1, #item-3, #item-4, #item-5, #item-7').addClass("d-none");
+            const itens = ['#item-0', '#item-1', '#item-3', '#item-4', '#item-5', '#item-7'];
+            
+            if(!itens.includes(targetId)){
+                targetId = window.location.hash;
+            }
+            $(targetId).removeClass('d-none');
             
         });
+
+    });
+
+    // Função que será chamada quando o hash mudar
+    window.addEventListener('hashchange', function() {
+        const targetId = window.location.hash;
+        $('#item-0, #item-1, #item-3, #item-4, #item-5, #item-7').addClass("d-none");
+        const itens = ['#item-0', '#item-1', '#item-3', '#item-4', '#item-5', '#item-7'];
+        if(itens.includes(targetId)){
+            $(targetId).removeClass('d-none');
+        }else if(!targetId){
+            $("#item-1").removeClass('d-none');
+        }
+        
     });
 
     caso_de_erro_pln('.erro_pln_atr', '.avisos_pln_atr', '.relatorio_pln_atr', 'status_pln_atr');
