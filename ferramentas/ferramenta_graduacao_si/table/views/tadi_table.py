@@ -57,6 +57,16 @@ def page_tadi(request, text=""):
                                 prof_obj.consideracao1, prof_obj.consideracao2]
 
     print(profs_nao_gosta)
+
+    for turma in tadi_turmas:
+        professores = turma.professor_si.all()
+        
+        for professor in professores:
+            if professor.NomeProf not in auto_profs:
+                # print("Professor não encontrado", professor.NomeProf)
+                turma.professor_si.remove(professor)
+
+
     ano_aberto = AnoAberto.objects.get(id=1).Ano
     context = {
         "rp1": tadi_turmas,
@@ -279,7 +289,10 @@ def gera_sugestoes_tadi(ano):
                 dict_prof_preview[prof] -= 1
 
             if (prof in dict_prof_preview and dict_prof_preview[prof] == 0) or (not prof in dict_prof_preview):
-                del auto_profs[prof.NomeProf]
+                try:
+                    del auto_profs[prof.NomeProf]
+                except:
+                    print("Erro ao deletar o professor do auto_profs")
 
 
 
